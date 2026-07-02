@@ -1,0 +1,46 @@
+# Task Routing Rules for FinFlow Corporation
+
+revenue_analysis:
+  route_to: cfo
+  workers:
+    - analyst
+    - advisor
+  output_format: markdown
+  priority: high
+
+risk_assessment:
+  route_to: cfo
+  workers:
+    - analyst
+    - advisor
+  escalate_if_confidence_below: 0.8
+  priority: urgent
+
+market_summary:
+  route_to: cmo
+  workers:
+    - reporter
+  output_format: markdown
+  priority: normal
+
+technical_audit:
+  route_to: cto
+  workers:
+    - analyst
+  output_format: markdown
+  priority: normal
+
+operations_review:
+  route_to: coo
+  workers:
+    - analyst
+    - reporter
+  output_format: markdown
+  priority: normal
+
+content_generation:
+  route_to: creative
+  workers:
+    - reporter
+  output_format: markdown
+  priority: normal

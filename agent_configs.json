@@ -1,0 +1,44 @@
+{
+  "founder": {
+    "role": "strategy",
+    "priority": "high",
+    "memory_window": 10
+  },
+  "cofounder": {
+    "role": "coordination",
+    "priority": "high",
+    "memory_window": 10
+  },
+  "ceo": {
+    "role": "orchestration",
+    "delegation_enabled": true,
+    "max_parallel_tasks": 5
+  },
+  "departments": {
+    "cfo": {
+      "role": "financial_analysis",
+      "workers": ["analyst", "advisor"]
+    },
+    "cmo": {
+      "role": "market_insights",
+      "workers": ["reporter"]
+    },
+    "cto": {
+      "role": "technical_validation",
+      "workers": ["analyst"]
+    },
+    "coo": {
+      "role": "operations",
+      "workers": ["analyst", "reporter"]
+    },
+    "hr": {
+      "role": "compliance",
+      "workers": ["advisor"]
+    },
+    "creative": {
+      "role": "content_generation",
+      "workers": ["reporter"]
+    }
+  },
+  "workers": ["analyst", "advisor", "reporter"]
+}

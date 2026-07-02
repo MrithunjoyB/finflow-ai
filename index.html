@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FinFlow AI Corporation</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Space+Grotesk:wght@300;400;600&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#000;color:white;font-family:'Space Grotesk',sans-serif;overflow-x:hidden;}
+canvas#space{position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:0;}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;justify-content:space-between;align-items:center;padding:16px 40px;background:rgba(0,0,0,0.7);backdrop-filter:blur(20px);border-bottom:1px solid rgba(0,255,136,0.1);}
+.logo{font-family:'Orbitron',monospace;font-size:1rem;font-weight:900;background:linear-gradient(90deg,#00ff88,#00cfff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:3px;}
+.nav-right{display:flex;align-items:center;gap:20px;font-size:0.7rem;letter-spacing:2px;color:rgba(255,255,255,0.3);text-transform:uppercase;}
+.online-dot{width:6px;height:6px;border-radius:50%;background:#00ff88;box-shadow:0 0 8px #00ff88;animation:blink 2s infinite;display:inline-block;margin-right:6px;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.2}}
+
+.page{position:relative;z-index:10;}
+
+/* HERO */
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:100px 40px 60px;}
+.hero-tag{font-size:0.65rem;letter-spacing:6px;text-transform:uppercase;color:rgba(0,255,136,0.6);margin-bottom:24px;}
+.hero-title{font-family:'Orbitron',monospace;font-size:clamp(2.5rem,8vw,7rem);font-weight:900;line-height:0.9;letter-spacing:-2px;margin-bottom:20px;}
+.hero-title span{background:linear-gradient(135deg,#00ff88,#00cfff 50%,#a855f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.hero-sub{font-size:0.85rem;color:rgba(255,255,255,0.3);letter-spacing:3px;text-transform:uppercase;margin-bottom:60px;}
+
+/* ORB */
+.orb-wrap{position:relative;width:220px;height:220px;margin:0 auto 60px;cursor:pointer;}
+.ring{position:absolute;top:50%;left:50%;border-radius:50%;border:1px solid;transform:translate(-50%,-50%);animation:spin linear infinite;}
+.ring:nth-child(1){width:80px;height:80px;border-color:rgba(0,255,136,0.9);animation-duration:2s;}
+.ring:nth-child(2){width:120px;height:120px;border-color:rgba(0,207,255,0.5);animation-duration:4s;animation-direction:reverse;}
+.ring:nth-child(3){width:160px;height:160px;border-color:rgba(168,85,247,0.3);animation-duration:6s;}
+.ring:nth-child(4){width:200px;height:200px;border-color:rgba(255,255,255,0.06);animation-duration:10s;animation-direction:reverse;}
+.ring:nth-child(5){width:220px;height:220px;border-color:rgba(0,255,136,0.04);animation-duration:14s;}
+.orb-core{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:60px;height:60px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#00ff88,#00cfff 50%,#a855f7);box-shadow:0 0 30px rgba(0,255,136,0.8),0 0 60px rgba(0,207,255,0.5),0 0 90px rgba(168,85,247,0.3);animation:pulse 3s ease-in-out infinite;display:flex;align-items:center;justify-content:center;font-family:'Orbitron',monospace;font-size:0.45rem;font-weight:700;color:rgba(0,0,0,0.8);letter-spacing:1px;z-index:2;}
+@keyframes spin{from{transform:translate(-50%,-50%) rotate(0deg)}to{transform:translate(-50%,-50%) rotate(360deg)}}
+@keyframes pulse{0%,100%{box-shadow:0 0 30px rgba(0,255,136,0.8),0 0 60px rgba(0,207,255,0.5)}50%{box-shadow:0 0 50px rgba(0,255,136,1),0 0 100px rgba(0,207,255,0.8),0 0 150px rgba(168,85,247,0.5)}}
+
+/* HIERARCHY */
+.section{padding:60px 40px;max-width:1400px;margin:0 auto;}
+.sec-label{font-size:0.6rem;letter-spacing:6px;text-transform:uppercase;color:rgba(0,255,136,0.5);margin-bottom:32px;display:flex;align-items:center;gap:16px;}
+.sec-label::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,rgba(0,255,136,0.2),transparent);}
+
+/* LEADERSHIP ROW */
+.leadership{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(255,255,255,0.04);border-radius:20px;overflow:hidden;margin-bottom:1px;}
+.leader-card{background:#000;padding:32px 24px;position:relative;transition:all 0.4s;cursor:default;overflow:hidden;}
+.leader-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--c),transparent);opacity:0.8;}
+.leader-card:hover{background:#060606;transform:scale(1.01);}
+.leader-rank{font-size:0.55rem;letter-spacing:4px;text-transform:uppercase;color:var(--c);opacity:0.6;margin-bottom:16px;font-family:'Orbitron',monospace;}
+.leader-icon{font-size:2rem;margin-bottom:12px;display:block;}
+.leader-name{font-family:'Orbitron',monospace;font-size:0.9rem;font-weight:700;color:white;margin-bottom:8px;letter-spacing:1px;}
+.leader-desc{font-size:0.75rem;color:rgba(255,255,255,0.3);line-height:1.6;}
+.leader-dot{width:5px;height:5px;border-radius:50%;background:var(--c);box-shadow:0 0 6px var(--c);animation:blink 2s infinite;display:inline-block;margin-right:6px;margin-top:16px;}
+
+/* DEPT GRID */
+.dept-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(255,255,255,0.03);border-radius:20px;overflow:hidden;}
+.dept-card{background:#000;padding:28px 24px;position:relative;transition:all 0.4s;cursor:default;overflow:hidden;}
+.dept-card::before{content:'';position:absolute;top:0;left:0;bottom:0;width:2px;background:var(--c);opacity:0;}
+.dept-card:hover::before{opacity:0.8;}
+.dept-card:hover{background:#040404;}
+.dept-head{font-size:0.6rem;letter-spacing:3px;text-transform:uppercase;color:var(--c);margin-bottom:12px;font-family:'Orbitron',monospace;}
+.dept-icon{font-size:1.8rem;margin-bottom:10px;display:block;}
+.dept-name{font-size:0.95rem;font-weight:600;color:white;margin-bottom:6px;}
+.dept-desc{font-size:0.72rem;color:rgba(255,255,255,0.25);line-height:1.6;margin-bottom:16px;}
+.workers{display:flex;flex-wrap:wrap;gap:6px;}
+.worker-tag{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:6px;padding:4px 10px;font-size:0.65rem;color:rgba(255,255,255,0.4);display:flex;align-items:center;gap:5px;}
+.worker-tag::before{content:'';width:4px;height:4px;border-radius:50%;background:var(--c);box-shadow:0 0 4px var(--c);}
+
+/* UPLOAD */
+.upload-wrap{max-width:700px;margin:0 auto;padding:0 40px 60px;}
+.upload-box{border:1px solid rgba(255,255,255,0.07);border-radius:20px;padding:50px;text-align:center;cursor:pointer;transition:all 0.4s;background:rgba(255,255,255,0.01);}
+.upload-box:hover{border-color:rgba(0,255,136,0.25);background:rgba(0,255,136,0.02);}
+.upload-icon{font-size:2.5rem;margin-bottom:14px;display:block;opacity:0.5;}
+.upload-title{font-size:0.95rem;font-weight:600;color:white;margin-bottom:6px;}
+.upload-sub{font-size:0.75rem;color:rgba(255,255,255,0.2);letter-spacing:1px;}
+#fileInput{display:none;}
+.file-pill{display:none;align-items:center;gap:10px;background:rgba(0,255,136,0.04);border:1px solid rgba(0,255,136,0.12);border-radius:10px;padding:12px 18px;margin-top:12px;}
+.file-pill.show{display:flex;}
+.file-name{font-size:0.82rem;color:#00ff88;font-weight:600;}
+.activate-btn{display:none;width:100%;margin-top:12px;padding:18px;background:transparent;border:1px solid rgba(0,255,136,0.25);border-radius:14px;color:#00ff88;font-family:'Orbitron',monospace;font-size:0.75rem;font-weight:700;letter-spacing:4px;text-transform:uppercase;cursor:pointer;transition:all 0.4s;}
+.activate-btn:hover{border-color:rgba(0,255,136,0.7);box-shadow:0 0 30px rgba(0,255,136,0.15);}
+.activate-btn.show{display:block;}
+
+/* PIPELINE */
+.pipeline{display:none;flex-direction:column;gap:1px;background:rgba(255,255,255,0.03);border-radius:16px;overflow:hidden;margin-top:16px;}
+.pipeline.show{display:flex;}
+.pipe{background:#000;padding:14px 20px;display:flex;align-items:center;gap:14px;opacity:0.2;transition:all 0.5s;border-left:2px solid transparent;}
+.pipe.active{opacity:1;background:#030303;border-left-color:var(--c);box-shadow:inset 6px 0 20px rgba(0,255,136,0.04);}
+.pipe.done{opacity:0.45;border-left-color:rgba(255,255,255,0.05);}
+.pipe-icon{font-size:1rem;width:24px;text-align:center;}
+.pipe-text{flex:1;font-size:0.78rem;color:rgba(255,255,255,0.6);}
+.pipe-bar{width:80px;height:2px;background:rgba(255,255,255,0.04);border-radius:1px;overflow:hidden;}
+.pipe-fill{height:100%;width:0%;background:var(--c);transition:width 3s ease;box-shadow:0 0 6px var(--c);}
+.pipe.active .pipe-fill,.pipe.done .pipe-fill{width:100%;}
+.pipe-check{font-size:0.75rem;color:var(--c);opacity:0;transition:opacity 0.3s;width:16px;}
+.pipe.done .pipe-check{opacity:1;}
+
+/* RESULTS */
+.results-wrap{display:none;padding:0 40px 80px;max-width:1400px;margin:0 auto;}
+.results-wrap.show{display:block;}
+.res-header{font-family:'Orbitron',monospace;font-size:1.2rem;font-weight:700;background:linear-gradient(90deg,#00ff88,#00cfff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:32px;}
+.metrics-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(255,255,255,0.04);border-radius:14px;overflow:hidden;margin-bottom:1px;}
+.metric{background:#000;padding:20px;text-align:center;}
+.metric-val{font-family:'Orbitron',monospace;font-size:1.8rem;font-weight:700;}
+.metric-lbl{font-size:0.6rem;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-top:6px;}
+.dept-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(255,255,255,0.04);border-radius:14px;overflow:hidden;margin-bottom:1px;}
+.dept-tab{background:#000;padding:16px;border:none;color:rgba(255,255,255,0.25);font-family:'Space Grotesk',sans-serif;font-size:0.7rem;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all 0.3s;}
+.dept-tab.active{color:var(--c,#00ff88);background:#040404;}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
+.result-card{background:rgba(255,255,255,0.01);border:1px solid rgba(255,255,255,0.05);border-radius:14px;padding:28px;margin-bottom:1px;}
+.result-card-head{font-size:0.6rem;letter-spacing:4px;text-transform:uppercase;color:var(--c,#00ff88);margin-bottom:16px;font-family:'Orbitron',monospace;}
+.result-text{font-size:0.85rem;color:rgba(255,255,255,0.65);line-height:1.9;white-space:pre-wrap;}
+.dl-row{display:grid;grid-template-columns:1fr 1fr;gap:1px;margin-top:1px;background:rgba(255,255,255,0.03);border-radius:12px;overflow:hidden;}
+.dl-btn{background:#000;border:none;padding:16px;color:rgba(255,255,255,0.3);font-family:'Orbitron',monospace;font-size:0.6rem;letter-spacing:3px;text-transform:uppercase;cursor:pointer;transition:all 0.3s;}
+.dl-btn:hover{color:white;background:#060606;}
+
+footer{position:relative;z-index:10;text-align:center;padding:40px;font-size:0.6rem;letter-spacing:4px;text-transform:uppercase;color:rgba(255,255,255,0.08);}
+</style>
+</head>
+<body>
+<canvas id="space"></canvas>
+
+<nav>
+  <div class="logo">FINFLOW // CORPORATION</div>
+  <div class="nav-right">
+    <span><span class="online-dot"></span>9 AI Agents Online</span>
+    <span>|</span>
+    <span>Groq · LLaMA 3.3 70B</span>
+  </div>
+</nav>
+
+<div class="page">
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-tag">Autonomous AI Business Ecosystem</div>
+    <h1 class="hero-title"><span>FINFLOW<br>CORP</span></h1>
+    <p class="hero-sub">Founder AI · C-Suite · 6 Departments · 24 Worker Agents</p>
+    <div class="orb-wrap" onclick="document.getElementById('fileInput').click()">
+      <div class="ring"></div><div class="ring"></div><div class="ring"></div>
+      <div class="ring"></div><div class="ring"></div>
+      <div class="orb-core">ACTIVATE</div>
+    </div>
+  </div>
+
+  <!-- LEADERSHIP -->
+  <div class="section">
+    <div class="sec-label">Executive Leadership</div>
+    <div class="leadership">
+      <div class="leader-card" style="--c:#ffd700">
+        <div class="leader-rank">Tier 1 · Supreme</div>
+        <span class="leader-icon">👑</span>
+        <div class="leader-name">Founder AI</div>
+        <div class="leader-desc">Master visionary controlling the entire ecosystem. Makes high-level strategic decisions. Access to all departments.</div>
+        <span class="leader-dot"></span>
+      </div>
+      <div class="leader-card" style="--c:#00ff88">
+        <div class="leader-rank">Tier 1 · Strategic</div>
+        <span class="leader-icon">🤝</span>
+        <div class="leader-name">Co-Founder AI</div>
+        <div class="leader-desc">Assists Founder. Handles scaling, optimization, and inter-department coordination and communication.</div>
+        <span class="leader-dot"></span>
+      </div>
+      <div class="leader-card" style="--c:#00cfff">
+        <div class="leader-rank">Tier 2 · Operational</div>
+        <span class="leader-icon">👔</span>
+        <div class="leader-name">CEO AI</div>
+        <div class="leader-desc">Main operational intelligence. Delegates to all department heads. Tracks company-wide performance.</div>
+        <span class="leader-dot"></span>
+      </div>
+    </div>
+
+    <!-- DEPARTMENTS -->
+    <div class="sec-label" style="margin-top:40px;">Department Intelligence</div>
+    <div class="dept-grid">
+      <div class="dept-card" style="--c:#00ff88">
+        <div class="dept-head">CFO · Finance</div>
+        <span class="dept-icon">💰</span>
+        <div class="dept-name">CFO AI</div>
+        <div class="dept-desc">Budget analysis · Revenue tracking · Expense forecasting · Investment optimization</div>
+        <div class="workers">
+          <span class="worker-tag">Accounting</span>
+          <span class="worker-tag">Invoice</span>
+          <span class="worker-tag">Tax</span>
+          <span class="worker-tag">Prediction</span>
+        </div>
+      </div>
+      <div class="dept-card" style="--c:#f59e0b">
+        <div class="dept-head">CMO · Marketing</div>
+        <span class="dept-icon">📣</span>
+        <div class="dept-name">CMO AI</div>
+        <div class="dept-desc">Campaign management · Social media · Ad optimization · SEO · Content generation</div>
+        <div class="workers">
+          <span class="worker-tag">Content</span>
+          <span class="worker-tag">Social Media</span>
+          <span class="worker-tag">SEO</span>
+          <span class="worker-tag">Ads</span>
+          <span class="worker-tag">Trends</span>
+        </div>
+      </div>
+      <div class="dept-card" style="--c:#00cfff">
+        <div class="dept-head">CTO · Technology</div>
+        <span class="dept-icon">⚙️</span>
+        <div class="dept-name">CTO AI</div>
+        <div class="dept-desc">System architecture · AI workflows · Backend monitoring · Security systems</div>
+        <div class="workers">
+          <span class="worker-tag">Backend</span>
+          <span class="worker-tag">Frontend</span>
+          <span class="worker-tag">AI Eng</span>
+          <span class="worker-tag">DevOps</span>
+          <span class="worker-tag">Security</span>
+        </div>
+      </div>
+      <div class="dept-card" style="--c:#a855f7">
+        <div class="dept-head">COO · Operations</div>
+        <span class="dept-icon">🔄</span>
+        <div class="dept-name">COO AI</div>
+        <div class="dept-desc">Workflow automation · Task management · Team coordination · Productivity optimization</div>
+        <div class="workers">
+          <span class="worker-tag">Scheduling</span>
+          <span class="worker-tag">Automation</span>
+          <span class="worker-tag">Monitoring</span>
+          <span class="worker-tag">Performance</span>
+        </div>
+      </div>
+      <div class="dept-card" style="--c:#ec4899">
+        <div class="dept-head">Creative Director</div>
+        <span class="dept-icon">🎨</span>
+        <div class="dept-name">Creative AI</div>
+        <div class="dept-desc">Visual identity · Branding · UI/UX generation · Design systems · Motion graphics</div>
+        <div class="workers">
+          <span class="worker-tag">Design</span>
+          <span class="worker-tag">UI/UX</span>
+          <span class="worker-tag">Video</span>
+          <span class="worker-tag">Motion</span>
+        </div>
+      </div>
+      <div class="dept-card" style="--c:#34d399">
+        <div class="dept-head">HR Manager</div>
+        <span class="dept-icon">👥</span>
+        <div class="dept-name">HR AI</div>
+        <div class="dept-desc">Recruitment automation · Performance analysis · Training systems · Culture management</div>
+        <div class="workers">
+          <span class="worker-tag">Hiring</span>
+          <span class="worker-tag">Interview</span>
+          <span class="worker-tag">Onboarding</span>
+          <span class="worker-tag">Support</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- UPLOAD -->
+  <div class="upload-wrap">
+    <div class="sec-label">Mission Input</div>
+    <div class="upload-box" onclick="document.getElementById('fileInput').click()">
+      <span class="upload-icon">⬡</span>
+      <div class="upload-title">Upload Financial Document</div>
+      <div class="upload-sub">PDF · CSV · All 9 AI agents will analyze it</div>
+      <input type="file" id="fileInput" accept=".pdf,.csv" onchange="onFile(this)">
+    </div>
+    <div class="file-pill" id="filePill">
+      <span style="color:#00ff88">◈</span>
+      <span class="file-name" id="fileName"></span>
+      <span style="color:rgba(255,255,255,0.2);font-size:0.72rem;margin-left:auto;">Ready</span>
+    </div>
+    <button class="activate-btn" id="activateBtn" onclick="launch()">⚡ Launch AI Corporation</button>
+
+    <div class="pipeline" id="pipeline">
+      <div class="pipe" id="p0" style="--c:#ffd700"><span class="pipe-icon">👑</span><span class="pipe-text">Founder AI — Strategic vision analysis</span><div class="pipe-bar"><div class="pipe-fill"></div></div><span class="pipe-check">✓</span></div>
+      <div class="pipe" id="p1" style="--c:#00ff88"><span class="pipe-icon">🤝</span><span class="pipe-text">Co-Founder AI — Coordination & scaling</span><div class="pipe-bar"><div class="pipe-fill"></div></div><span class="pipe-check">✓</span></div>
+      <div class="pipe" id="p2" style="--c:#00cfff"><span class="pipe-icon">👔</span><span class="pipe-text">CEO AI — Delegation & operations</span><div class="pipe-bar"><div class="pipe-fill"></div></div><span class="pipe-check">✓</span></div>
+      <div class="pipe" id="p3" style="--c:#00ff88"><span class="pipe-icon">💰</span><span class="pipe-text">CFO AI — Financial intelligence</span><div class="pipe-bar"><div class="pipe-fill"></div></div><span class="pipe-check">✓</span></div>
+      <div class="pipe" id="p4" style="--c:#f59e0b"><span class="pipe-icon">📣</span><span class="pipe-text">CMO AI — Marketing strategy</span><div class="pipe-bar"><div class="pipe-fill"></div></div><span class="pipe-check">✓</span></div>
+      <div class="pipe" id="p5" style="--c:#00cfff"><span class="pipe-icon">⚙️</span><span class="pipe-text">CTO AI — Technology systems</span><div class="pipe-bar"><div class="pipe-fill"></div></div><span class="pipe-check">✓</span></div>
+      <div class="pipe" id="p6" style="--c:#a855f7"><span class="pipe-icon">🔄</span><span class="pipe-text">COO AI — Operations workflow</span><div class="pipe-bar"><div class="pipe-fill"></div></div><span class="pipe-check">✓</span></div>
+      <div class="pipe" id="p7" style="--c:#ec4899"><span class="pipe-icon">🎨</span><span class="pipe-text">Creative Director AI — Brand & design</span><div class="pipe-bar"><div class="pipe-fill"></div></div><span class="pipe-check">✓</span></div>
+      <div class="pipe" id="p8" style="--c:#34d399"><span class="pipe-icon">👥</span><span class="pipe-text">HR Manager AI — Team & talent</span><div class="pipe-bar"><div class="pipe-fill"></div></div><span class="pipe-check">✓</span></div>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="results-wrap" id="resultsWrap">
+    <div class="sec-label">Corporation Intelligence Report</div>
+    <div class="metrics-bar">
+      <div class="metric"><div class="metric-val" style="color:#ffd700">9/9</div><div class="metric-lbl">Agents Done</div></div>
+      <div class="metric"><div class="metric-val" style="color:#00ff88">&lt;60s</div><div class="metric-lbl">Processing</div></div>
+      <div class="metric"><div class="metric-val" style="color:#00cfff">24</div><div class="metric-lbl">Workers Active</div></div>
+      <div class="metric"><div class="metric-val" style="color:#a855f7">~8hr</div><div class="metric-lbl">Work Saved</div></div>
+    </div>
+
+    <!-- LEADERSHIP TABS -->
+    <div class="sec-label" style="margin-top:32px;">Leadership Intelligence</div>
+    <div class="dept-tabs" style="grid-template-columns:repeat(3,1fr)">
+      <button class="dept-tab active" style="--c:#ffd700" onclick="switchTab('lead',0,this)">👑 Founder</button>
+      <button class="dept-tab" style="--c:#00ff88" onclick="switchTab('lead',1,this)">🤝 Co-Founder</button>
+      <button class="dept-tab" style="--c:#00cfff" onclick="switchTab('lead',2,this)">👔 CEO</button>
+    </div>
+    <div id="lead-0" class="tab-panel active"><div class="result-card" style="--c:#ffd700"><div class="result-card-head">Founder AI · Strategic Vision</div><div class="result-text" id="r-founder">Processing...</div></div></div>
+    <div id="lead-1" class="tab-panel"><div class="result-card" style="--c:#00ff88"><div class="result-card-head">Co-Founder AI · Coordination Report</div><div class="result-text" id="r-cofounder">Processing...</div></div></div>
+    <div id="lead-2" class="tab-panel"><div class="result-card" style="--c:#00cfff"><div class="result-card-head">CEO AI · Operational Intelligence</div><div class="result-text" id="r-ceo">Processing...</div></div></div>
+
+    <!-- DEPT TABS -->
+    <div class="sec-label" style="margin-top:32px;">Department Reports</div>
+    <div class="dept-tabs" style="grid-template-columns:repeat(6,1fr)">
+      <button class="dept-tab active" style="--c:#00ff88" onclick="switchTab('dept',0,this)">💰 CFO</button>
+      <button class="dept-tab" style="--c:#f59e0b" onclick="switchTab('dept',1,this)">📣 CMO</button>
+      <button class="dept-tab" style="--c:#00cfff" onclick="switchTab('dept',2,this)">⚙️ CTO</button>
+      <button class="dept-tab" style="--c:#a855f7" onclick="switchTab('dept',3,this)">🔄 COO</button>
+      <button class="dept-tab" style="--c:#ec4899" onclick="switchTab('dept',4,this)">🎨 Creative</button>
+      <button class="dept-tab" style="--c:#34d399" onclick="switchTab('dept',5,this)">👥 HR</button>
+    </div>
+    <div id="dept-0" class="tab-panel active"><div class="result-card" style="--c:#00ff88"><div class="result-card-head">CFO AI · Finance Department</div><div class="result-text" id="r-cfo">Processing...</div></div></div>
+    <div id="dept-1" class="tab-panel"><div class="result-card" style="--c:#f59e0b"><div class="result-card-head">CMO AI · Marketing Department</div><div class="result-text" id="r-cmo">Processing...</div></div></div>
+    <div id="dept-2" class="tab-panel"><div class="result-card" style="--c:#00cfff"><div class="result-card-head">CTO AI · Technology Department</div><div class="result-text" id="r-cto">Processing...</div></div></div>
+    <div id="dept-3" class="tab-panel"><div class="result-card" style="--c:#a855f7"><div class="result-card-head">COO AI · Operations Department</div><div class="result-text" id="r-coo">Processing...</div></div></div>
+    <div id="dept-4" class="tab-panel"><div class="result-card" style="--c:#ec4899"><div class="result-card-head">Creative Director AI · Brand & Design</div><div class="result-text" id="r-creative">Processing...</div></div></div>
+    <div id="dept-5" class="tab-panel"><div class="result-card" style="--c:#34d399"><div class="result-card-head">HR Manager AI · People & Culture</div><div class="result-text" id="r-hr">Processing...</div></div></div>
+
+    <div class="dl-row">
+      <button class="dl-btn" onclick="dl()">↓ Download Full Corporation Report</button>
+      <button class="dl-btn" onclick="location.reload()">↺ New Analysis</button>
+    </div>
+  </div>
+
+  <footer>FinFlow AI Corporation · 9 Agents · 24 Workers · Groq + LLaMA 3.3 70B · Hackathon Build</footer>
+</div>
+
+<script>
+// SPACE BG
+const sc=document.getElementById('space');
+const sx=sc.getContext('2d');
+sc.width=window.innerWidth;sc.height=window.innerHeight;
+const stars=Array.from({length:250},()=>({x:Math.random()*sc.width,y:Math.random()*sc.height,r:Math.random()*1.2,o:Math.random(),v:Math.random()*0.004+0.001}));
+const nodes=Array.from({length:70},()=>({x:Math.random()*sc.width,y:Math.random()*sc.height,vx:(Math.random()-.5)*.4,vy:(Math.random()-.5)*.4,r:Math.random()*1.5+.5,c:['#00ff88','#00cfff','#a855f7','#ffd700','#f59e0b','#ec4899'][Math.floor(Math.random()*6)],z:Math.random()*1.5+.5}));
+const mouse={x:-999,y:-999};
+window.addEventListener('mousemove',e=>{mouse.x=e.clientX;mouse.y=e.clientY;});
+window.addEventListener('touchmove',e=>{mouse.x=e.touches[0].clientX;mouse.y=e.touches[0].clientY;},{passive:true});
+
+function draw(){
+  sx.fillStyle='rgba(0,0,0,0.1)';sx.fillRect(0,0,sc.width,sc.height);
+  stars.forEach(s=>{s.o+=s.v;if(s.o>1||s.o<0)s.v*=-1;sx.beginPath();sx.arc(s.x,s.y,s.r,0,Math.PI*2);sx.fillStyle=`rgba(255,255,255,${s.o*.5})`;sx.fill();});
+  for(let i=0;i<nodes.length;i++){
+    const a=nodes[i];
+    const dx=a.x-mouse.x,dy=a.y-mouse.y,d=Math.sqrt(dx*dx+dy*dy);
+    if(d<140){a.vx+=(dx/d)*.3;a.vy+=(dy/d)*.3;}
+    a.vx*=.98;a.vy*=.98;a.x+=a.vx*a.z;a.y+=a.vy*a.z;
+    if(a.x<0)a.x=sc.width;if(a.x>sc.width)a.x=0;
+    if(a.y<0)a.y=sc.height;if(a.y>sc.height)a.y=0;
+    for(let j=i+1;j<nodes.length;j++){
+      const b=nodes[j];const dx2=a.x-b.x,dy2=a.y-b.y,d2=Math.sqrt(dx2*dx2+dy2*dy2);
+      if(d2<170){sx.beginPath();sx.strokeStyle=a.c;sx.globalAlpha=(1-d2/170)*.18*a.z;sx.lineWidth=.4;sx.moveTo(a.x,a.y);sx.lineTo(b.x,b.y);sx.stroke();}
+    }
+    sx.globalAlpha=.7*a.z;sx.beginPath();sx.arc(a.x,a.y,a.r*a.z,0,Math.PI*2);sx.fillStyle=a.c;sx.shadowBlur=10*a.z;sx.shadowColor=a.c;sx.fill();
+  }
+  sx.globalAlpha=1;sx.shadowBlur=0;requestAnimationFrame(draw);
+}
+draw();
+
+// 3D TILT
+document.querySelectorAll('.dept-card,.leader-card').forEach(c=>{
+  c.addEventListener('mousemove',e=>{
+    const r=c.getBoundingClientRect();
+    const x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;
+    c.style.transform=`scale(1.02) rotateX(${-y*8}deg) rotateY(${x*8}deg)`;
+  });
+  c.addEventListener('mouseleave',()=>c.style.transform='');
+});
+
+// FILE
+function onFile(inp){
+  if(!inp.files[0])return;
+  document.getElementById('fileName').textContent=inp.files[0].name;
+  document.getElementById('filePill').classList.add('show');
+  document.getElementById('activateBtn').classList.add('show');
+}
+
+// LAUNCH
+async function launch(){
+  document.getElementById('activateBtn').style.display='none';
+  document.getElementById('pipeline').classList.add('show');
+  const pipes=Array.from({length:9},(_,i)=>document.getElementById('p'+i));
+  
+  // Animate each step
+  for(let i=0;i<9;i++){
+    pipes[i].classList.add('active');
+    if(i>0){pipes[i-1].classList.remove('active');pipes[i-1].classList.add('done');}
+  }
+
+  const fd=new FormData();
+  fd.append('file',document.getElementById('fileInput').files[0]);
+
+  try{
+    const res=await fetch('http://localhost:5050/analyze',{method:'POST',body:fd});
+    const data=await res.json();
+    if(data.error){alert('Error: '+data.error);return;}
+
+    // Mark all done
+    pipes.forEach(p=>{p.classList.remove('active');p.classList.add('done');});
+
+    // Fill results
+    const map={founder:'r-founder',cofounder:'r-cofounder',ceo:'r-ceo',cfo:'r-cfo',cmo:'r-cmo',cto:'r-cto',coo:'r-coo',creative:'r-creative',hr:'r-hr'};
+    Object.entries(map).forEach(([k,id])=>{
+      const el=document.getElementById(id);
+      if(el)el.textContent=data[k]||'No response';
+    });
+
+  }catch(e){
+    alert('Server not running!\n\nOpen terminal and run:\ncd /Users/mrithunjoybasumatary/Claude/finflow-ai\npython3 server.py');
+    return;
+  }
+
+  document.getElementById('pipeline').classList.remove('show');
+  document.getElementById('resultsWrap').classList.add('show');
+  document.getElementById('resultsWrap').scrollIntoView({behavior:'smooth'});
+}
+
+// TABS
+function switchTab(group,i,btn){
+  document.querySelectorAll(`[id^="${group}-"]`).forEach((p,j)=>p.classList.toggle('active',i===j));
+  btn.closest('.dept-tabs').querySelectorAll('.dept-tab').forEach((b,j)=>b.classList.toggle('active',i===j));
+}
+
+// DOWNLOAD
+function dl(){
+  const ids=['founder','cofounder','ceo','cfo','cmo','cto','coo','creative','hr'];
+  const names=['FOUNDER AI','CO-FOUNDER AI','CEO AI','CFO AI','CMO AI','CTO AI','COO AI','CREATIVE DIRECTOR AI','HR MANAGER AI'];
+  const txt=ids.map((id,i)=>`${'='.repeat(50)}\n${names[i]}\n${'='.repeat(50)}\n`+(document.getElementById('r-'+id)?.textContent||'')).join('\n\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([txt],{type:'text/plain'}));
+  a.download='finflow_corporation_report.txt';a.click();
+}
+
+window.addEventListener('resize',()=>{sc.width=window.innerWidth;sc.height=window.innerHeight;});
+</script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+flask
+groq
+pandas
+pdfplumber
+python-dotenv
+requests
