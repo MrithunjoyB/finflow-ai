@@ -6,6 +6,7 @@
 # Uploaded / private financial data
 data/
 outputs/
+.tmp/
 
 # Python cache
 __pycache__/
