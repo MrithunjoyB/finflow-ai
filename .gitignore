@@ -9,6 +9,8 @@ outputs/
 
 # Python cache
 __pycache__/
+.pycache/
+.pytest_cache/
 *.pyc
 *.pyo
 

@@ -1,105 +1,348 @@
-## 🎯 Problem Statement
-Financial operations are slow, siloed, and error-prone. Small teams lack enterprise tools, while large teams drown in manual workflows, scattered spreadsheets, and delayed reporting. Decision-making takes days instead of minutes.
+# FinFlow AI Corporation
 
-##  Our Solution
-**FinFlow Corporation** is a fully autonomous multi-agent AI system that replicates a real company structure. Instead of manual coordination, AI agents collaborate, delegate, and execute financial analysis tasks in real-time.
+Prototype multi-agent finance operations system built for the AI Generalist Hackathon.
 
-Upload a financial document → Watch agents initialize → Get a structured, insight-rich report in seconds. Zero human intervention required.
+FinFlow AI Corporation turns a financial document into a coordinated executive report by routing the same source data through a simulated company of AI agents: Founder, Co-Founder, CEO, department heads, and worker agents. The project is positioned as an agentic finance-ops prototype: part document intelligence, part organizational workflow simulation, part recruiter-friendly demonstration of prompt orchestration.
 
----
+## Why This Project Matters
 
-## 🏗️ System Architecture
-FinFlow uses a hierarchical multi-agent pipeline:
-- **Tier 1 (Strategy):** Founder & Co-Founder set vision and oversight
-- **Tier 2 (Orchestration):** CEO routes tasks, manages priorities & queues
-- **Tier 3 (Departments):** CFO, CMO, CTO, COO, HR handle domain expertise
-- **Tier 4 (Workers):** Analyst, Advisor, Reporter execute granular tasks & format outputs
+Finance operations often depend on manual review, spreadsheet cleanup, delayed reporting, and fragmented decision-making. FinFlow explores how a multi-agent system can compress that workflow into a single autonomous run:
 
-## 🤖 AI Agent Roles
-| Agent | File | Responsibility |
-|-------|------|----------------|
-| 👑 Founder AI | `founder.py` | Strategic vision, master oversight |
-| 🤝 Co-Founder AI | `cofounder.py` | Scaling, cross-department coordination |
-| 👔 CEO AI | `ceo.py` | Task delegation, priority routing |
-| 💰 CFO AI | `cfo.py` | Financial analysis, risk assessment |
-| 📣 CMO AI | `cmo.py` | Market insights, sentiment tracking |
-| ️ CTO AI | `cto.py` | Technical validation, data pipeline checks |
-| 🎨 Creative AI | `creative.py` | Visual design, content generation |
-|  COO AI | `coo.py` | Workflow optimization, ops execution |
-| 👥 HR AI | `hr.py` | Resource allocation, compliance guardrails |
-| 📊 Analyst | `analyst.py` | Data parsing, metric extraction |
-|  Advisor | `advisor.py` | Strategic recommendations, scenario modeling |
-| 📝 Reporter | `reporter.py` | Report generation, formatting, delivery |
+1. A user uploads a PDF, CSV, or TXT financial document.
+2. The backend extracts structured text from the file.
+3. A hierarchy of Groq-powered agents analyzes the same context from different operating roles.
+4. The frontend displays a company-style intelligence report across strategy, finance, operations, technology, marketing, creative, and HR perspectives.
 
----
+## System Architecture
 
-## ️ Tech Stack
-| Layer | Technology |
-|-------|------------|
-| **Backend** | Python 3.11, Flask |
-| **AI Engine** | Groq API + LLaMA 3.3 70B |
-| **Frontend** | Vanilla HTML/CSS/JS (Animated Cyberpunk UI) |
-| **Data Processing** | `pandas`, `pdfplumber`, `json` |
-| **Environment** | `python-dotenv`, `requirements.txt` |
-
-## ✨ Key Features
-- 📄 **Multi-format Ingestion:** Seamlessly process PDFs, CSVs, and TXT files
-- 🔄 **Autonomous Delegation:** Tasks flow Founder → CEO → Departments → Workers without manual routing
-- 💬 **Inter-Agent Protocol:** Structured messaging with priority levels & context retention
-- 🧠 **Persistent Memory:** Agents retain conversation history across tasks
--  **100% Free-Tier Optimized:** Built entirely on Groq's generous free tier + open-source tools
-
-## ▶️ How to Run Locally
-```bash
-# 1. Navigate to project root
-cd finflow-ai
-
-# 2. Install dependencies
-pip3 install -r requirements.txt
-
-# 3. Configure environment
-cp .env.example .env
-# Edit .env and add your GROQ_API_KEY
-
-# 4. Launch the server
-python3 server.py
-
-# 5. Open in browser
-# → http://localhost:5000
+```text
+User Upload
+   |
+   v
+Flask API (/api/analyze)
+   |
+   v
+Document Extraction
+   |
+   v
+Founder AI -> Co-Founder AI -> CEO AI
+   |
+   v
+Department Agents: CFO, CMO, CTO, COO, Creative, HR
+   |
+   v
+JSON response -> Browser report tabs -> Downloadable report
 ```
----
 
-## 🎥 Demo Instructions
-1. Launch the app and wait for the agent hierarchy animation
-2. Upload a financial document (`/data/` contains sample files)
-3. Select a task: `Revenue Analysis`, `Risk Assessment`, or `Market Summary`
-4. Watch agents collaborate in real-time via the live chat log
-5. Review the auto-generated report in the output panel
+```mermaid
+flowchart TD
+    U["User uploads PDF, CSV, or TXT"] --> API["Flask API /api/analyze"]
+    API --> EX["Document extraction"]
+    EX --> F["Founder AI"]
+    F --> CF["Co-Founder AI"]
+    F --> CEO["CEO AI"]
+    CEO --> CFO["CFO AI"]
+    CEO --> CMO["CMO AI"]
+    CEO --> CTO["CTO AI"]
+    CEO --> COO["COO AI"]
+    CEO --> CR["Creative Director AI"]
+    CEO --> HR["HR Manager AI"]
+    CFO --> SYN["Executive synthesis"]
+    CMO --> SYN
+    CTO --> SYN
+    COO --> SYN
+    CR --> SYN
+    HR --> SYN
+    SYN --> EV["Evaluator"]
+    EV --> RES["JSON response: agents, trace, messages, final_report, evaluation"]
+```
 
----
+## Agent Trace Logging
 
-## 🔮 Future Scope
-- 🔗 **Integrations:** Slack, Teams, Google Workspace connectors
-- 📊 **Advanced Viz:** Interactive Plotly/D3 dashboards
-- 🔐 **Enterprise:** SSO, audit logging, role-based access control
-- 🌐 **Federation:** Multi-company AI conglomerates sharing insights
-- 🤖 **Self-Improvement:** Agents that refine prompts via feedback loops
+Every agent call is wrapped by `services/trace_logger.py`. The trace records:
 
----
+- `agent_name`
+- `role`
+- `status`
+- `started_at`
+- `ended_at`
+- `duration_ms`
+- `output_preview`
+- `error`
 
-## 📂 Submission Structure
+The API response includes a `trace` array so reviewers can inspect execution order, timing, and failures without reading server logs.
 
-AI-Agent-Ecosystem-[MrithunjoyBasumatary]/
-├── 🎬 Demo Video/ → AI_Agent_Ecosystem_Demo.mp4
-├── 📸 Screenshots/ → 6 labeled PNGs
-├── 💻 Source Code/ → Full project files
-├── ️ Workflow Files/ → Agent configs & prompts
-├── Documentation/ → This README.md
-├── 🗺️ Architecture Diagram/ → system_architecture.png
-├── 🧠 Prompt Files/ → master_company_prompt.txt
-└── 🎯 Pitch Deck/ → pitch_deck.pdf (optional)
+## Agent-to-Agent Message Schema
 
----
+`services/schemas.py` defines an `AgentMessage` dataclass for explicit handoffs between roles:
 
-> *Built with ❤️ for the future of autonomous business*  
-> 🏆 AI Generalist Hackathon 2026 • 100% Free-Tier Compatible • No vendor lock-in
+```python
+AgentMessage(
+    sender="Founder AI",
+    receiver="CEO AI",
+    task="delegate_department_work",
+    priority="high",
+    context="Founder directives and company data",
+    expected_output="Department delegations, KPI dashboard, and operating plan",
+    confidence=0.9,
+)
+```
+
+The current runtime returns these handoffs in the `messages` field. This keeps the project honest: the schema is implemented and visible, while deeper dynamic routing remains a next-step improvement.
+
+## Evaluator And Synthesis
+
+`agents/synthesis.py` creates a single `final_report` from the 9 agent outputs. The report includes:
+
+- Executive summary
+- Financial snapshot
+- Risks
+- Opportunities
+- Recommended actions
+- Disclaimer that the output is not financial advice
+
+`agents/evaluator.py` runs a simple rule-based quality check over the agent outputs. It returns:
+
+- `score` from 0 to 100
+- `passed`
+- `missing_sections`
+- `recommendations`
+
+The evaluator checks for financial summary, risk assessment, actionable recommendations, operational observations, caution/disclaimer language, and all 9 required agent outputs.
+
+## Agent Hierarchy
+
+| Tier | Agent | File | Responsibility |
+| --- | --- | --- | --- |
+| Strategy | Founder AI | `agents/founder.py` | Strategic vision, key decisions, risk assessment |
+| Strategy | Co-Founder AI | `agents/cofounder.py` | Scaling, optimization, cross-department coordination |
+| Orchestration | CEO AI | `agents/ceo.py` | Delegation, KPI tracking, operational directives |
+| Department | CFO AI | `agents/cfo.py` | Budget, revenue, expenses, forecasts, financial health |
+| Department | CMO AI | `agents/cmo.py` | Market insights, campaign strategy, growth metrics |
+| Department | CTO AI | `agents/cto.py` | Architecture, AI workflow status, security review |
+| Department | COO AI | `agents/coo.py` | Workflow health, automation, bottlenecks |
+| Department | Creative AI | `agents/creative.py` | Brand, UI/UX, content production |
+| Department | HR AI | `agents/hr.py` | Resource allocation, training, team performance |
+| Worker Pipeline | Analyst, Reporter, Advisor | `agents/analyst.py`, `agents/reporter.py`, `agents/advisor.py` | Extraction, reporting, recommendations |
+
+## Tech Stack
+
+| Layer | Technology |
+| --- | --- |
+| Backend API | Python, Flask, Flask-CORS |
+| AI Runtime | Groq API with LLaMA 3.3 70B |
+| Document Processing | `pandas`, `pdfplumber` |
+| Frontend Demo | Vanilla HTML/CSS/JavaScript |
+| Alternate UI | Streamlit prototype in `app.py` |
+| Config | `.env`, `agent_configs.json`, `task_routing.yaml` |
+
+## Repository Structure
+
+```text
+finflow-ai/
+├── server.py              # Main Flask API used by index.html
+├── config.py              # Environment-driven runtime settings
+├── index.html             # Browser demo and agent report UI
+├── corporation.py         # 9-agent company execution flow
+├── orchestrator.py        # 3-agent worker pipeline used by Streamlit app
+├── app.py                 # Alternate Streamlit prototype
+├── agents/                # Role-specific agent prompts and functions
+├── services/              # Trace logger and agent message schemas
+├── tests/                 # API and orchestration tests
+├── utils/helpers.py       # Groq client wrapper and environment loading
+├── agent_configs.json     # Agent metadata and routing configuration
+├── task_routing.yaml      # Task routing rules for future orchestration
+├── requirements.txt       # Python dependencies
+└── .env.example           # Environment variable template
+```
+
+## Setup
+
+### 1. Clone and enter the project
+
+```bash
+git clone https://github.com/MrithunjoyB/finflow-ai.git
+cd finflow-ai
+```
+
+### 2. Create a virtual environment
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+On Windows PowerShell:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+```
+
+### 3. Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### 4. Configure environment
+
+```bash
+cp .env.example .env
+```
+
+The default `.env.example` runs in recruiter-friendly demo mode:
+
+```text
+DEMO_MODE=true
+PORT=5050
+GROQ_API_KEY=your_groq_api_key_here
+```
+
+In `DEMO_MODE=true`, the app returns polished mock agent outputs and does not call Groq. This lets reviewers run the full 9-agent UI without creating an API key.
+
+For live LLM responses, edit `.env`:
+
+```text
+DEMO_MODE=false
+GROQ_API_KEY=your_real_groq_api_key
+```
+
+Do not commit `.env`. It is intentionally ignored by `.gitignore`.
+
+## Run The Main Demo
+
+Start the Flask backend:
+
+```bash
+python3 server.py
+```
+
+Open `index.html` in a browser, then upload a PDF, CSV, or TXT file. The frontend sends the file to:
+
+```text
+http://localhost:5050/api/analyze
+```
+
+Health check:
+
+```bash
+curl http://localhost:5050/api/health
+```
+
+Expected response:
+
+```json
+{"allowed_extensions":["csv","pdf","txt"],"demo_mode":true,"status":"AI Corporation Online"}
+```
+
+Backward-compatible routes are still available:
+
+```text
+/health
+/analyze
+```
+
+The `/api/analyze` response includes:
+
+```json
+{
+  "success": true,
+  "run_id": "abc123",
+  "agents": {
+    "founder": "...",
+    "cofounder": "...",
+    "ceo": "...",
+    "cfo": "...",
+    "cmo": "...",
+    "cto": "...",
+    "coo": "...",
+    "creative": "...",
+    "hr": "..."
+  },
+  "trace": [
+    {
+      "agent_name": "Founder AI",
+      "role": "Strategic vision and master oversight",
+      "status": "completed",
+      "started_at": "2026-07-03T00:00:00+00:00",
+      "ended_at": "2026-07-03T00:00:01+00:00",
+      "duration_ms": 1000,
+      "output_preview": "...",
+      "error": null
+    }
+  ],
+  "evaluation": {
+    "score": 100,
+    "passed": true,
+    "missing_sections": [],
+    "recommendations": []
+  },
+  "final_report": "...",
+  "founder": "...",
+  "cofounder": "...",
+  "ceo": "...",
+  "cfo": "...",
+  "cmo": "...",
+  "cto": "...",
+  "coo": "...",
+  "creative": "...",
+  "hr": "..."
+}
+```
+
+The individual top-level agent keys are preserved so the existing cinematic frontend continues to work.
+
+## Run Tests
+
+```bash
+pytest
+```
+
+## Optional Streamlit Prototype
+
+The Streamlit app runs a smaller worker-agent pipeline with Analyst, Reporter, and Advisor agents:
+
+```bash
+streamlit run app.py
+```
+
+Use this path when you want a simpler document-intelligence demo. Use `server.py` + `index.html` when showing the full FinFlow AI Corporation hierarchy.
+
+## Security Notes
+
+- `.env` and `*.env` files are ignored.
+- Uploaded financial files are stored under `data/<run_id>/`, which is ignored.
+- The API key is loaded from `GROQ_API_KEY` and is never hard-coded.
+- The Flask upload endpoint validates file extensions, sanitizes filenames, applies `MAX_CONTENT_LENGTH`, and returns a unique `run_id`.
+- `DEMO_MODE=true` allows safe public demos without exposing or requiring API keys.
+
+## Current Limitations
+
+- Agent execution is sequential today; parallel department execution would reduce latency.
+- `agent_configs.json` and `task_routing.yaml` describe the intended routing layer but are not fully wired into the Flask execution path yet.
+- The agents currently use a lightweight message schema rather than a full planner/router loop.
+- Test coverage currently focuses on API health, upload validation, backward-compatible routes, and `run_id` response behavior.
+
+## Strong Next Improvements For An Agentic AI Internship
+
+- Add a real `Message` schema for agent-to-agent communication with fields like `sender`, `receiver`, `task`, `priority`, `confidence`, and `evidence`.
+- Execute department agents concurrently with `asyncio` or a worker queue, then have the CEO synthesize their outputs.
+- Wire `task_routing.yaml` into the runtime so user-selected tasks route to specialized departments.
+- Add a small evaluation harness with sample financial documents and expected output checks.
+- Add structured JSON outputs from each agent before rendering human-readable reports.
+- Expand trace logs into a full agent decision timeline with prompt IDs and confidence updates.
+- Expand demo mode with role-specific sample reports and trace logs.
+
+## Recruiter Snapshot
+
+FinFlow AI Corporation demonstrates:
+
+- Multi-agent prompt architecture and role design
+- LLM API integration with environment-based secret management
+- Financial document ingestion using PDF and CSV tooling
+- Flask API design for AI workflows
+- Frontend presentation of asynchronous agent results
+- Product thinking around autonomous business operations
+
+Built by Mrithunjoy Basumatary as a hackathon project and portfolio piece for AI systems, agentic AI, and automation-focused internship roles.
