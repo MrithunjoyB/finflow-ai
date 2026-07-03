@@ -1,0 +1,6 @@
+date,category,description,amount,type
+2026-06-01,Revenue,Client payment,50000,income
+2026-06-03,Software,Cloud hosting,4500,expense
+2026-06-05,Marketing,Instagram ads,8000,expense
+2026-06-07,Salary,Freelancer payment,12000,expense
+2026-06-10,Revenue,Consulting project,35000,income
