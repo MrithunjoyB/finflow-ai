@@ -25,6 +25,9 @@ Flask API (/api/analyze)
 Document Extraction
    |
    v
+Task Router
+   |
+   v
 Founder AI -> Co-Founder AI -> CEO AI
    |
    v
@@ -38,7 +41,8 @@ JSON response -> Browser report tabs -> Downloadable report
 flowchart TD
     U["User uploads PDF, CSV, or TXT"] --> API["Flask API /api/analyze"]
     API --> EX["Document extraction"]
-    EX --> F["Founder AI"]
+    EX --> ROUTER["Task router detects route and selected agents"]
+    ROUTER --> F["Founder AI"]
     F --> CF["Co-Founder AI"]
     F --> CEO["CEO AI"]
     CEO --> CFO["CFO AI"]
@@ -56,6 +60,24 @@ flowchart TD
     SYN --> EV["Evaluator"]
     EV --> RES["JSON response: agents, trace, messages, final_report, evaluation"]
 ```
+
+## Runtime Task Routing
+
+FinFlow now detects the uploaded document type at runtime with `services/task_router.py`. The router uses lightweight keyword rules and `task_routing.yaml` metadata to choose a task type, priority, selected agents, reason, and confidence score.
+
+The default UI still runs `full_analysis=true`, which executes all 9 agents for the cinematic demo. API users can send `full_analysis=false` to run only the routed department agents while always preserving the Founder, Co-Founder, and CEO strategic flow.
+
+| Task Type | Trigger Examples | Routed Department Focus |
+| --- | --- | --- |
+| `invoice_analysis` | invoice, payment, due, vendor, bill | CFO + COO |
+| `revenue_analysis` | revenue, income, sales, client payment | CFO + CEO |
+| `expense_review` | expense, cost, spend, subscription | CFO + COO |
+| `risk_assessment` | risk, anomaly, fraud, late, overdue | CFO + CEO + COO |
+| `market_summary` | marketing, ad, campaign, SEO, social | CMO + CEO |
+| `technical_audit` | server, API, security, backend, frontend | CTO + COO |
+| `operations_review` | workflow, process, operations, productivity | COO + CEO |
+| `content_generation` | design, brand, content, creative | Creative + CMO |
+| `general_finance_review` | fallback route | Founder + Co-Founder + CEO + CFO + COO |
 
 ## Agent Trace Logging
 
@@ -147,6 +169,7 @@ finflow-ai/
 ├── orchestrator.py        # 3-agent worker pipeline used by Streamlit app
 ├── app.py                 # Alternate Streamlit prototype
 ├── agents/                # Role-specific agent prompts and functions
+├── samples/               # Fake sample CSV/TXT files for local demos
 ├── services/              # Trace logger and agent message schemas
 ├── tests/                 # API and orchestration tests
 ├── utils/helpers.py       # Groq client wrapper and environment loading
@@ -243,12 +266,31 @@ Backward-compatible routes are still available:
 /analyze
 ```
 
+Optional routed mode for API testing:
+
+```bash
+curl -X POST \
+  -F "full_analysis=false" \
+  -F "file=@samples/sample_invoice.txt" \
+  http://localhost:5050/api/analyze
+```
+
+Use `full_analysis=true` for the complete 9-agent demo. Use `full_analysis=false` to demonstrate task-routed execution.
+
 The `/api/analyze` response includes:
 
 ```json
 {
   "success": true,
   "run_id": "abc123",
+  "full_analysis": true,
+  "routing": {
+    "task_type": "invoice_analysis",
+    "priority": "high",
+    "selected_agents": ["founder", "cofounder", "ceo", "cfo", "coo"],
+    "reason": "Detected invoice/payment/amount keywords",
+    "confidence": 0.82
+  },
   "agents": {
     "founder": "...",
     "cofounder": "...",
@@ -293,11 +335,23 @@ The `/api/analyze` response includes:
 
 The individual top-level agent keys are preserved so the existing cinematic frontend continues to work.
 
+## Sample Files
+
+Fake sample files are included for quick recruiter demos:
+
+- `samples/sample_transactions.csv` for revenue analysis
+- `samples/sample_invoice.txt` for invoice analysis
+- `samples/sample_expenses.csv` for expense review
+
+These files contain synthetic data only.
+
 ## Run Tests
 
 ```bash
 pytest
 ```
+
+The tests cover routing classification, API compatibility, demo-mode routed execution, trace logging, synthesis, and evaluator behavior.
 
 ## Optional Streamlit Prototype
 
@@ -320,16 +374,16 @@ Use this path when you want a simpler document-intelligence demo. Use `server.py
 ## Current Limitations
 
 - Agent execution is sequential today; parallel department execution would reduce latency.
-- `agent_configs.json` and `task_routing.yaml` describe the intended routing layer but are not fully wired into the Flask execution path yet.
+- Runtime routing is rule-based today; it does not yet use an LLM planner or learned classifier.
 - The agents currently use a lightweight message schema rather than a full planner/router loop.
-- Test coverage currently focuses on API health, upload validation, backward-compatible routes, and `run_id` response behavior.
+- Test coverage is intentionally lightweight and focused on routing, API behavior, demo mode, tracing, and evaluator output.
 
 ## Strong Next Improvements For An Agentic AI Internship
 
 - Add a real `Message` schema for agent-to-agent communication with fields like `sender`, `receiver`, `task`, `priority`, `confidence`, and `evidence`.
 - Execute department agents concurrently with `asyncio` or a worker queue, then have the CEO synthesize their outputs.
-- Wire `task_routing.yaml` into the runtime so user-selected tasks route to specialized departments.
-- Add a small evaluation harness with sample financial documents and expected output checks.
+- Use `task_routing.yaml` more deeply for configurable route policies and confidence thresholds.
+- Add a richer evaluation harness with expected outputs for each sample document.
 - Add structured JSON outputs from each agent before rendering human-readable reports.
 - Expand trace logs into a full agent decision timeline with prompt IDs and confidence updates.
 - Expand demo mode with role-specific sample reports and trace logs.

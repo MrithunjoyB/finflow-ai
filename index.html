@@ -291,6 +291,12 @@ footer{position:relative;z-index:10;text-align:center;padding:40px;font-size:0.6
       <div class="metric"><div class="metric-val" style="color:#a855f7">~8hr</div><div class="metric-lbl">Work Saved</div></div>
     </div>
 
+    <div class="sec-label" style="margin-top:32px;">Task Routing</div>
+    <div class="result-card" style="--c:#ffd700">
+      <div class="result-card-head">Detected Mission Route</div>
+      <div class="result-text" id="r-routing">Processing...</div>
+    </div>
+
     <div class="sec-label" style="margin-top:32px;">Final Executive Report</div>
     <div class="result-card" style="--c:#00ff88">
       <div class="result-card-head">Synthesized Corporation Report</div>
@@ -420,6 +426,7 @@ async function launch(){
     });
     const finalReport=document.getElementById('r-final-report');
     if(finalReport)finalReport.textContent=data.final_report||'No final report returned';
+    renderRouting(data.routing);
     renderTrace(data.trace||[]);
 
   }catch(e){
@@ -449,6 +456,21 @@ function renderTrace(trace){
   }).join('\n');
 }
 
+function renderRouting(routing){
+  const el=document.getElementById('r-routing');
+  if(!el)return;
+  if(!routing){el.textContent='No routing data returned';return;}
+  const agents=(routing.selected_agents||[]).join(', ');
+  const confidence=typeof routing.confidence==='number'?`${Math.round(routing.confidence*100)}%`:(routing.confidence||'n/a');
+  el.textContent=[
+    `Detected Task: ${routing.task_type||'unknown'}`,
+    `Priority: ${routing.priority||'unknown'}`,
+    `Selected Agents: ${agents||'n/a'}`,
+    `Confidence: ${confidence}`,
+    `Reason: ${routing.reason||'n/a'}`
+  ].join('\n');
+}
+
 // DOWNLOAD
 function dl(){
   const ids=['founder','cofounder','ceo','cfo','cmo','cto','coo','creative','hr'];
@@ -456,7 +478,8 @@ function dl(){
   const finalText=`${'='.repeat(50)}\nFINAL EXECUTIVE REPORT\n${'='.repeat(50)}\n`+(document.getElementById('r-final-report')?.textContent||'');
   const agentText=ids.map((id,i)=>`${'='.repeat(50)}\n${names[i]}\n${'='.repeat(50)}\n`+(document.getElementById('r-'+id)?.textContent||'')).join('\n\n');
   const traceText=`${'='.repeat(50)}\nAGENT TRACE\n${'='.repeat(50)}\n`+(document.getElementById('r-trace')?.textContent||'');
-  const txt=[finalText,agentText,traceText].join('\n\n');
+  const routingText=`${'='.repeat(50)}\nTASK ROUTING\n${'='.repeat(50)}\n`+(document.getElementById('r-routing')?.textContent||'');
+  const txt=[routingText,finalText,agentText,traceText].join('\n\n');
   const a=document.createElement('a');
   a.href=URL.createObjectURL(new Blob([txt],{type:'text/plain'}));
   a.download='finflow_corporation_report.txt';a.click();

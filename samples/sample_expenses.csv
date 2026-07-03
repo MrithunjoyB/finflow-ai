@@ -1,0 +1,7 @@
+date,vendor,category,amount,recurring,notes
+2026-01-02,Acme Cloud Services,Infrastructure,2073.60,true,Monthly cloud server and API hosting cost
+2026-01-06,Launch Ads Network,Marketing,1750.00,false,Paid campaign spend for product launch
+2026-01-09,Figma,Design Subscription,144.00,true,Creative team design software subscription
+2026-01-11,RemoteOps Payroll,Contractors,4200.00,true,Finance operations analyst support
+2026-01-14,DataLens,Analytics Subscription,399.00,true,Dashboard and reporting software
+2026-01-20,SecureScan,Security,520.00,true,Backend security monitoring subscription

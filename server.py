@@ -16,6 +16,7 @@ from config import (
     UPLOAD_DIR,
 )
 from corporation import run_corporation
+from services.task_router import detect_task_type
 
 
 app = Flask(__name__)
@@ -102,10 +103,28 @@ def analyze():
 
     try:
         raw_data = extract_text(path)
-        results = run_corporation(raw_data, run_id=run_id)
-        return jsonify({"success": True, "run_id": run_id, **results})
+        routing = detect_task_type(raw_data)
+        full_analysis = _as_bool(request.form.get("full_analysis", "true"))
+        results = run_corporation(
+            raw_data,
+            run_id=run_id,
+            full_analysis=full_analysis,
+        )
+        return jsonify(
+            {
+                "success": True,
+                "run_id": run_id,
+                "routing": routing,
+                "full_analysis": full_analysis,
+                **results,
+            }
+        )
     except Exception as exc:
         return jsonify({"success": False, "run_id": run_id, "error": str(exc)}), 500
+
+
+def _as_bool(value):
+    return str(value).strip().lower() in {"1", "true", "yes", "on"}
 
 
 if __name__ == "__main__":

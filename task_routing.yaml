@@ -2,45 +2,103 @@
 
 revenue_analysis:
   route_to: cfo
+  supporting_agents:
+    - ceo
+    - coo
   workers:
     - analyst
     - advisor
   output_format: markdown
   priority: high
+  description: "Analyze revenue, income, sales, and client payment patterns."
 
 risk_assessment:
   route_to: cfo
+  supporting_agents:
+    - ceo
+    - coo
   workers:
     - analyst
     - advisor
   escalate_if_confidence_below: 0.8
+  output_format: markdown
   priority: urgent
+  description: "Detect financial, operational, fraud, anomaly, late-payment, and overdue risks."
+
+invoice_analysis:
+  route_to: cfo
+  supporting_agents:
+    - coo
+  workers:
+    - analyst
+    - advisor
+  output_format: markdown
+  priority: high
+  description: "Review invoices, vendors, due dates, bill totals, taxes, and payment status."
+
+expense_review:
+  route_to: cfo
+  supporting_agents:
+    - coo
+  workers:
+    - analyst
+    - reporter
+  output_format: markdown
+  priority: high
+  description: "Review expenses, recurring costs, subscriptions, vendor spend, and cost controls."
 
 market_summary:
   route_to: cmo
+  supporting_agents:
+    - ceo
   workers:
     - reporter
   output_format: markdown
   priority: normal
+  description: "Summarize marketing, ads, campaigns, SEO, and social media signals."
 
 technical_audit:
   route_to: cto
+  supporting_agents:
+    - coo
   workers:
     - analyst
   output_format: markdown
   priority: normal
+  description: "Audit API, backend, frontend, server, security, and technical workflow signals."
 
 operations_review:
   route_to: coo
+  supporting_agents:
+    - ceo
   workers:
     - analyst
     - reporter
   output_format: markdown
   priority: normal
+  description: "Review workflow, process, productivity, and operational bottlenecks."
 
 content_generation:
   route_to: creative
+  supporting_agents:
+    - cmo
   workers:
     - reporter
   output_format: markdown
   priority: normal
+  description: "Generate or review design, brand, creative, and content opportunities."
+
+general_finance_review:
+  route_to: cfo
+  supporting_agents:
+    - founder
+    - cofounder
+    - ceo
+    - coo
+  workers:
+    - analyst
+    - advisor
+    - reporter
+  output_format: markdown
+  priority: normal
+  description: "Default finance review when no specialized route is detected."

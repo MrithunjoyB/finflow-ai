@@ -30,11 +30,14 @@ def test_rejects_unsupported_file_type():
 def test_analyze_returns_run_id(monkeypatch):
     client = server.app.test_client()
 
-    def fake_run_corporation(raw_data, run_id=None):
+    def fake_run_corporation(raw_data, run_id=None, full_analysis=True):
         assert "Revenue" in raw_data
         assert run_id
+        assert full_analysis is True
         return {
             "run_id": run_id,
+            "routing": {"task_type": "revenue_analysis"},
+            "full_analysis": full_analysis,
             "founder": "demo founder report",
             "cfo": "demo cfo report",
             "agents": {"founder": "demo founder report", "cfo": "demo cfo report"},
@@ -60,6 +63,7 @@ def test_analyze_returns_run_id(monkeypatch):
     assert response.status_code == 200
     assert data["success"] is True
     assert data["run_id"]
+    assert data["routing"]["task_type"] == "revenue_analysis"
     assert data["founder"] == "demo founder report"
     assert data["final_report"] == "demo final report"
 
@@ -70,3 +74,29 @@ def test_backward_compatible_health_route():
     response = client.get("/health")
 
     assert response.status_code == 200
+
+
+def test_full_analysis_false_returns_success_in_demo_mode():
+    client = server.app.test_client()
+
+    response = client.post(
+        "/api/analyze",
+        data={
+            "full_analysis": "false",
+            "file": (
+                io.BytesIO(
+                    b"Invoice INV-2026-0142 vendor Acme payment due total amount"
+                ),
+                "invoice.txt",
+            ),
+        },
+        content_type="multipart/form-data",
+    )
+
+    data = response.get_json()
+    assert response.status_code == 200
+    assert data["success"] is True
+    assert data["full_analysis"] is False
+    assert data["routing"]["task_type"] == "invoice_analysis"
+    assert data["trace"]
+    assert data["final_report"]

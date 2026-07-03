@@ -10,6 +10,7 @@ from agents.founder import founder_vision
 from agents.hr import hr_manage
 from agents.synthesis import synthesize_report
 from services.schemas import AgentMessage
+from services.task_router import detect_task_type
 from services.trace_logger import run_agent_with_trace
 
 
@@ -26,10 +27,17 @@ AGENT_ROLES = {
 }
 
 
-def run_corporation(financial_data, company_context="AI Finance Corporation", run_id=None):
+def run_corporation(
+    financial_data,
+    company_context="AI Finance Corporation",
+    run_id=None,
+    full_analysis=True,
+):
     agent_outputs = {}
     trace = []
     messages = []
+    routing = detect_task_type(financial_data)
+    selected_agents = set(AGENT_ROLES) if full_analysis else set(routing["selected_agents"])
 
     def run(key, fn, *args):
         agent_name, role = AGENT_ROLES[key]
@@ -91,6 +99,13 @@ def run_corporation(financial_data, company_context="AI Finance Corporation", ru
     ]
 
     for key, fn, log_line in department_plan:
+        if key not in selected_agents:
+            agent_name, _role = AGENT_ROLES[key]
+            agent_outputs[key] = (
+                f"{agent_name} skipped by task router for {routing['task_type']}."
+            )
+            continue
+
         agent_name, role = AGENT_ROLES[key]
         messages.append(
             AgentMessage(
@@ -112,6 +127,8 @@ def run_corporation(financial_data, company_context="AI Finance Corporation", ru
     return {
         **agent_outputs,
         "run_id": run_id,
+        "routing": routing,
+        "full_analysis": full_analysis,
         "agents": agent_outputs,
         "messages": messages,
         "trace": trace,
