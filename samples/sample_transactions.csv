@@ -1,0 +1,8 @@
+date,category,description,amount,type
+2026-01-03,Revenue,Client payment from Northstar Analytics,12500.00,income
+2026-01-05,Revenue,Subscription sales batch payout,8400.00,income
+2026-01-08,Expense,Cloud hosting invoice,-1320.45,expense
+2026-01-12,Expense,Design contractor payment,-2200.00,expense
+2026-01-15,Revenue,Enterprise onboarding fee,5000.00,income
+2026-01-18,Expense,Marketing campaign spend,-1750.00,expense
+2026-01-25,Revenue,Client payment from Atlas Retail,9700.00,income

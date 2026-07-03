@@ -1,6 +1,9 @@
 flask
+flask-cors
 groq
 pandas
 pdfplumber
 python-dotenv
+pytest
 requests
+streamlit

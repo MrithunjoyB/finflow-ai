@@ -6,9 +6,12 @@
 # Uploaded / private financial data
 data/
 outputs/
+.tmp/
 
 # Python cache
 __pycache__/
+.pycache/
+.pytest_cache/
 *.pyc
 *.pyo
 

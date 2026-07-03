@@ -1,0 +1,17 @@
+Invoice Number: INV-2026-0142
+Vendor: Acme Cloud Services
+Bill To: FinFlow AI Corporation
+Due Date: 2026-02-15
+Payment Status: Due
+
+Line Items:
+- API hosting usage, January 2026: $1,250.00
+- Managed database backup: $280.00
+- Security monitoring add-on: $390.00
+
+Subtotal: $1,920.00
+Tax: $153.60
+Total Amount Due: $2,073.60
+
+Notes:
+Please review payment due date, vendor billing category, and recurring infrastructure cost.

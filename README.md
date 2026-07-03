@@ -1,105 +1,234 @@
-## 🎯 Problem Statement
-Financial operations are slow, siloed, and error-prone. Small teams lack enterprise tools, while large teams drown in manual workflows, scattered spreadsheets, and delayed reporting. Decision-making takes days instead of minutes.
+# FinFlow AI Corporation
 
-##  Our Solution
-**FinFlow Corporation** is a fully autonomous multi-agent AI system that replicates a real company structure. Instead of manual coordination, AI agents collaborate, delegate, and execute financial analysis tasks in real-time.
+## Overview
 
-Upload a financial document → Watch agents initialize → Get a structured, insight-rich report in seconds. Zero human intervention required.
+FinFlow AI Corporation is a task-routed multi-agent finance operations prototype. It accepts financial documents, detects the task type, routes work to relevant AI agents, logs execution traces, evaluates output completeness, and synthesizes a final CFO-style report.
 
----
+The project is designed for public portfolio review, internship applications, hackathon judging, and startup-style evaluation. It is not a production finance platform yet, but it demonstrates the core architecture behind a traceable agentic AI workflow.
 
-## 🏗️ System Architecture
-FinFlow uses a hierarchical multi-agent pipeline:
-- **Tier 1 (Strategy):** Founder & Co-Founder set vision and oversight
-- **Tier 2 (Orchestration):** CEO routes tasks, manages priorities & queues
-- **Tier 3 (Departments):** CFO, CMO, CTO, COO, HR handle domain expertise
-- **Tier 4 (Workers):** Analyst, Advisor, Reporter execute granular tasks & format outputs
+## Problem
 
-## 🤖 AI Agent Roles
-| Agent | File | Responsibility |
-|-------|------|----------------|
-| 👑 Founder AI | `founder.py` | Strategic vision, master oversight |
-| 🤝 Co-Founder AI | `cofounder.py` | Scaling, cross-department coordination |
-| 👔 CEO AI | `ceo.py` | Task delegation, priority routing |
-| 💰 CFO AI | `cfo.py` | Financial analysis, risk assessment |
-| 📣 CMO AI | `cmo.py` | Market insights, sentiment tracking |
-| ️ CTO AI | `cto.py` | Technical validation, data pipeline checks |
-| 🎨 Creative AI | `creative.py` | Visual design, content generation |
-|  COO AI | `coo.py` | Workflow optimization, ops execution |
-| 👥 HR AI | `hr.py` | Resource allocation, compliance guardrails |
-| 📊 Analyst | `analyst.py` | Data parsing, metric extraction |
-|  Advisor | `advisor.py` | Strategic recommendations, scenario modeling |
-| 📝 Reporter | `reporter.py` | Report generation, formatting, delivery |
+Small businesses, freelancers, student startups, and small finance teams spend hours manually reading invoices, CSV exports, expenses, and finance reports. These workflows often involve repeated document review, manual categorization, spreadsheet checking, and delayed decision-making.
 
----
+## Solution
 
-## ️ Tech Stack
-| Layer | Technology |
-|-------|------------|
-| **Backend** | Python 3.11, Flask |
-| **AI Engine** | Groq API + LLaMA 3.3 70B |
-| **Frontend** | Vanilla HTML/CSS/JS (Animated Cyberpunk UI) |
-| **Data Processing** | `pandas`, `pdfplumber`, `json` |
-| **Environment** | `python-dotenv`, `requirements.txt` |
+FinFlow compresses that workflow into a guided multi-agent pipeline:
 
-## ✨ Key Features
-- 📄 **Multi-format Ingestion:** Seamlessly process PDFs, CSVs, and TXT files
-- 🔄 **Autonomous Delegation:** Tasks flow Founder → CEO → Departments → Workers without manual routing
-- 💬 **Inter-Agent Protocol:** Structured messaging with priority levels & context retention
-- 🧠 **Persistent Memory:** Agents retain conversation history across tasks
--  **100% Free-Tier Optimized:** Built entirely on Groq's generous free tier + open-source tools
+Upload PDF/CSV/TXT -> FinFlow parses content -> task router detects workflow -> selected AI agents analyze -> evaluator checks quality -> synthesis agent generates final report.
 
-## ▶️ How to Run Locally
-```bash
-# 1. Navigate to project root
-cd finflow-ai
+The system keeps the 9-agent AI corporation concept while adding runtime routing, trace logging, demo mode, and a clearer API contract.
 
-# 2. Install dependencies
-pip3 install -r requirements.txt
+## Key Features
 
-# 3. Configure environment
-cp .env.example .env
-# Edit .env and add your GROQ_API_KEY
+- PDF, CSV, and TXT financial document upload
+- Demo mode without a Groq API key
+- 9-agent AI corporation architecture
+- Runtime task routing
+- Agent trace logging
+- Evaluator agent for output completeness
+- Synthesis/final report agent
+- Fake sample files for safe demos
+- Pytest coverage for routing, API behavior, tracing, and evaluator checks
 
-# 4. Launch the server
-python3 server.py
+## Architecture
 
-# 5. Open in browser
-# → http://localhost:5000
+```mermaid
+flowchart TD
+    A["User Upload"] --> B["Flask API"]
+    B --> C["Safe File Handler"]
+    C --> D["Document Parser"]
+    D --> E["Task Router"]
+    E --> F["Founder AI"]
+    F --> G["Co-Founder AI"]
+    G --> H["CEO AI"]
+    H --> I["Selected Department Agents"]
+    I --> J["Evaluator"]
+    J --> K["Synthesis Agent"]
+    K --> L["Final Report + Trace Logs"]
 ```
----
 
-## 🎥 Demo Instructions
-1. Launch the app and wait for the agent hierarchy animation
-2. Upload a financial document (`/data/` contains sample files)
-3. Select a task: `Revenue Analysis`, `Risk Assessment`, or `Market Summary`
-4. Watch agents collaborate in real-time via the live chat log
-5. Review the auto-generated report in the output panel
+## AI Agent Architecture
 
----
+Leadership agents:
 
-## 🔮 Future Scope
-- 🔗 **Integrations:** Slack, Teams, Google Workspace connectors
-- 📊 **Advanced Viz:** Interactive Plotly/D3 dashboards
-- 🔐 **Enterprise:** SSO, audit logging, role-based access control
-- 🌐 **Federation:** Multi-company AI conglomerates sharing insights
-- 🤖 **Self-Improvement:** Agents that refine prompts via feedback loops
+- Founder AI
+- Co-Founder AI
+- CEO AI
 
----
+Department agents:
 
-## 📂 Submission Structure
+- CFO AI
+- CMO AI
+- CTO AI
+- COO AI
+- Creative Director AI
+- HR Manager AI
 
-AI-Agent-Ecosystem-[MrithunjoyBasumatary]/
-├── 🎬 Demo Video/ → AI_Agent_Ecosystem_Demo.mp4
-├── 📸 Screenshots/ → 6 labeled PNGs
-├── 💻 Source Code/ → Full project files
-├── ️ Workflow Files/ → Agent configs & prompts
-├── Documentation/ → This README.md
-├── 🗺️ Architecture Diagram/ → system_architecture.png
-├── 🧠 Prompt Files/ → master_company_prompt.txt
-└── 🎯 Pitch Deck/ → pitch_deck.pdf (optional)
+Worker and legacy agents:
 
----
+- Analyst
+- Reporter
+- Advisor
 
-> *Built with ❤️ for the future of autonomous business*  
-> 🏆 AI Generalist Hackathon 2026 • 100% Free-Tier Compatible • No vendor lock-in
+The leadership agents always run first in routed mode so the system keeps the strategic company hierarchy. Department agents are selected by task type unless `full_analysis=true` is used.
+
+## Runtime Task Routing
+
+| Task Type | Trigger Keywords | Selected Agents | Purpose |
+| --- | --- | --- | --- |
+| `invoice_analysis` | invoice, payment, due, vendor, bill | Founder, Co-Founder, CEO, CFO, COO | Review invoices, vendor bills, due dates, totals, and payment status. |
+| `revenue_analysis` | revenue, income, sales, client payment | Founder, Co-Founder, CEO, CFO | Analyze revenue, income, sales, and client payment signals. |
+| `expense_review` | expense, cost, spend, subscription | Founder, Co-Founder, CEO, CFO, COO | Review vendor spend, subscriptions, recurring costs, and cost-control opportunities. |
+| `risk_assessment` | risk, anomaly, fraud, late, overdue | Founder, Co-Founder, CEO, CFO, COO | Identify finance and operations risks. |
+| `market_summary` | marketing, ad, campaign, seo, social | Founder, Co-Founder, CEO, CMO | Summarize marketing and growth signals. |
+| `technical_audit` | server, api, security, backend, frontend | Founder, Co-Founder, CEO, CTO, COO | Review technical and security-related signals. |
+| `operations_review` | workflow, process, operations, productivity | Founder, Co-Founder, CEO, COO | Review process, productivity, and operational bottlenecks. |
+| `content_generation` | design, brand, content, creative | Founder, Co-Founder, CEO, Creative, CMO | Review or generate brand/content direction. |
+| `general_finance_review` | fallback route | Founder, Co-Founder, CEO, CFO, COO | General finance review when no specialized route matches. |
+
+## Demo Mode
+
+`DEMO_MODE=true` allows the project to run without a Groq API key. This is useful for recruiters, judges, and reviewers who want to test the interface and API quickly.
+
+Live LLM mode requires:
+
+```text
+DEMO_MODE=false
+GROQ_API_KEY=your_real_groq_api_key
+```
+
+## Setup Instructions
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python3 -m pip install -r requirements.txt
+cp .env.example .env
+python3 server.py
+```
+
+Open the health endpoint:
+
+```text
+http://127.0.0.1:5050/api/health
+```
+
+Then open `index.html` manually in your browser.
+
+## API Endpoints
+
+| Method | Endpoint | Purpose |
+| --- | --- | --- |
+| GET | `/api/health` | Current health endpoint |
+| GET | `/health` | Backward-compatible health endpoint |
+| POST | `/api/analyze` | Current analysis endpoint |
+| POST | `/analyze` | Backward-compatible analysis endpoint |
+
+Example:
+
+```bash
+curl -X POST http://127.0.0.1:5050/api/analyze \
+  -F "file=@samples/sample_invoice.txt" \
+  -F "full_analysis=false"
+```
+
+Use `full_analysis=true` for the complete 9-agent demo. Use `full_analysis=false` for routed execution.
+
+## API Response Example
+
+```json
+{
+  "success": true,
+  "run_id": "example-run-id",
+  "routing": {
+    "task_type": "invoice_analysis",
+    "priority": "high",
+    "selected_agents": ["founder", "cofounder", "ceo", "cfo", "coo"],
+    "reason": "Detected invoice/payment/amount keywords",
+    "confidence": 0.82
+  },
+  "agents": {
+    "founder": "...",
+    "cofounder": "...",
+    "ceo": "...",
+    "cfo": "...",
+    "cmo": "...",
+    "cto": "...",
+    "coo": "...",
+    "creative": "...",
+    "hr": "..."
+  },
+  "trace": [
+    {
+      "agent_name": "Founder AI",
+      "role": "Strategic vision and master oversight",
+      "status": "completed",
+      "started_at": "2026-07-04T00:00:00+00:00",
+      "ended_at": "2026-07-04T00:00:01+00:00",
+      "duration_ms": 1000,
+      "output_preview": "...",
+      "error": null
+    }
+  ],
+  "evaluation": {
+    "score": 100,
+    "passed": true,
+    "missing_sections": [],
+    "recommendations": []
+  },
+  "final_report": "..."
+}
+```
+
+Backward-compatible top-level agent keys are also returned: `founder`, `cofounder`, `ceo`, `cfo`, `cmo`, `cto`, `coo`, `creative`, and `hr`.
+
+## Sample Files
+
+- `samples/sample_transactions.csv`
+- `samples/sample_invoice.txt`
+- `samples/sample_expenses.csv`
+
+These files use fake data only and are safe for demos.
+
+## Testing
+
+```bash
+python3 -m pytest
+```
+
+Tests cover task routing, demo-mode API behavior, trace logging, evaluator output, and backward-compatible endpoints.
+
+## Security Notes
+
+- `.env` is gitignored.
+- `data/` and `outputs/` are gitignored.
+- Do not upload real financial documents in a public demo.
+- Demo mode avoids exposing API keys.
+- File uploads are restricted to PDF, CSV, and TXT.
+- This is not production financial advice.
+
+## Current Limitations
+
+- No database yet
+- No user authentication yet
+- No encrypted file storage yet
+- Routing is rule-based
+- Demo mode uses mock AI outputs
+- Financial outputs are informational, not financial, tax, legal, or investment advice
+
+## Roadmap
+
+- Real-time trace UI
+- Stronger evaluator
+- Financial metric calculator
+- Anomaly detection
+- Cash-flow forecasting
+- PDF report export
+- RAG knowledge base
+- QuickBooks/Xero integrations
+- Secure user accounts
+- Deployment
+
+## Portfolio Summary
+
+FinFlow AI Corporation is an internship/hackathon-ready prototype for agentic finance operations. It demonstrates task routing, multi-agent orchestration, traceable execution, evaluator checks, synthesis reporting, and safe demo-mode operation.

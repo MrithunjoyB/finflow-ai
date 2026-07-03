@@ -259,7 +259,7 @@ footer{position:relative;z-index:10;text-align:center;padding:40px;font-size:0.6
       <span class="upload-icon">⬡</span>
       <div class="upload-title">Upload Financial Document</div>
       <div class="upload-sub">PDF · CSV · All 9 AI agents will analyze it</div>
-      <input type="file" id="fileInput" accept=".pdf,.csv" onchange="onFile(this)">
+      <input type="file" id="fileInput" accept=".pdf,.csv,.txt" onchange="onFile(this)">
     </div>
     <div class="file-pill" id="filePill">
       <span style="color:#00ff88">◈</span>
@@ -289,6 +289,24 @@ footer{position:relative;z-index:10;text-align:center;padding:40px;font-size:0.6
       <div class="metric"><div class="metric-val" style="color:#00ff88">&lt;60s</div><div class="metric-lbl">Processing</div></div>
       <div class="metric"><div class="metric-val" style="color:#00cfff">24</div><div class="metric-lbl">Workers Active</div></div>
       <div class="metric"><div class="metric-val" style="color:#a855f7">~8hr</div><div class="metric-lbl">Work Saved</div></div>
+    </div>
+
+    <div class="sec-label" style="margin-top:32px;">Task Routing</div>
+    <div class="result-card" style="--c:#ffd700">
+      <div class="result-card-head">Detected Mission Route</div>
+      <div class="result-text" id="r-routing">Processing...</div>
+    </div>
+
+    <div class="sec-label" style="margin-top:32px;">Final Executive Report</div>
+    <div class="result-card" style="--c:#00ff88">
+      <div class="result-card-head">Synthesized Corporation Report</div>
+      <div class="result-text" id="r-final-report">Processing...</div>
+    </div>
+
+    <div class="sec-label" style="margin-top:32px;">Agent Trace Timeline</div>
+    <div class="result-card" style="--c:#00cfff">
+      <div class="result-card-head">Execution Trace</div>
+      <div class="result-text" id="r-trace">Processing...</div>
     </div>
 
     <!-- LEADERSHIP TABS -->
@@ -393,7 +411,7 @@ async function launch(){
   fd.append('file',document.getElementById('fileInput').files[0]);
 
   try{
-    const res=await fetch('http://localhost:5050/analyze',{method:'POST',body:fd});
+    const res=await fetch('http://localhost:5050/api/analyze',{method:'POST',body:fd});
     const data=await res.json();
     if(data.error){alert('Error: '+data.error);return;}
 
@@ -406,9 +424,13 @@ async function launch(){
       const el=document.getElementById(id);
       if(el)el.textContent=data[k]||'No response';
     });
+    const finalReport=document.getElementById('r-final-report');
+    if(finalReport)finalReport.textContent=data.final_report||'No final report returned';
+    renderRouting(data.routing);
+    renderTrace(data.trace||[]);
 
   }catch(e){
-    alert('Server not running!\n\nOpen terminal and run:\ncd /Users/mrithunjoybasumatary/Claude/finflow-ai\npython3 server.py');
+    alert('Server not running!\n\nOpen a terminal in the project folder and run:\npython3 server.py');
     return;
   }
 
@@ -423,11 +445,41 @@ function switchTab(group,i,btn){
   btn.closest('.dept-tabs').querySelectorAll('.dept-tab').forEach((b,j)=>b.classList.toggle('active',i===j));
 }
 
+function renderTrace(trace){
+  const el=document.getElementById('r-trace');
+  if(!el)return;
+  if(!trace.length){el.textContent='No trace returned';return;}
+  el.textContent=trace.map((t,i)=>{
+    const status=(t.status||'unknown').toUpperCase();
+    const duration=Number.isFinite(t.duration_ms)?t.duration_ms:(t.duration_ms||0);
+    return `${String(i+1).padStart(2,'0')} · ${t.agent_name||'Agent'} · ${status} · ${duration}ms`;
+  }).join('\n');
+}
+
+function renderRouting(routing){
+  const el=document.getElementById('r-routing');
+  if(!el)return;
+  if(!routing){el.textContent='No routing data returned';return;}
+  const agents=(routing.selected_agents||[]).join(', ');
+  const confidence=typeof routing.confidence==='number'?`${Math.round(routing.confidence*100)}%`:(routing.confidence||'n/a');
+  el.textContent=[
+    `Detected Task: ${routing.task_type||'unknown'}`,
+    `Priority: ${routing.priority||'unknown'}`,
+    `Selected Agents: ${agents||'n/a'}`,
+    `Confidence: ${confidence}`,
+    `Reason: ${routing.reason||'n/a'}`
+  ].join('\n');
+}
+
 // DOWNLOAD
 function dl(){
   const ids=['founder','cofounder','ceo','cfo','cmo','cto','coo','creative','hr'];
   const names=['FOUNDER AI','CO-FOUNDER AI','CEO AI','CFO AI','CMO AI','CTO AI','COO AI','CREATIVE DIRECTOR AI','HR MANAGER AI'];
-  const txt=ids.map((id,i)=>`${'='.repeat(50)}\n${names[i]}\n${'='.repeat(50)}\n`+(document.getElementById('r-'+id)?.textContent||'')).join('\n\n');
+  const finalText=`${'='.repeat(50)}\nFINAL EXECUTIVE REPORT\n${'='.repeat(50)}\n`+(document.getElementById('r-final-report')?.textContent||'');
+  const agentText=ids.map((id,i)=>`${'='.repeat(50)}\n${names[i]}\n${'='.repeat(50)}\n`+(document.getElementById('r-'+id)?.textContent||'')).join('\n\n');
+  const traceText=`${'='.repeat(50)}\nAGENT TRACE\n${'='.repeat(50)}\n`+(document.getElementById('r-trace')?.textContent||'');
+  const routingText=`${'='.repeat(50)}\nTASK ROUTING\n${'='.repeat(50)}\n`+(document.getElementById('r-routing')?.textContent||'');
+  const txt=[routingText,finalText,agentText,traceText].join('\n\n');
   const a=document.createElement('a');
   a.href=URL.createObjectURL(new Blob([txt],{type:'text/plain'}));
   a.download='finflow_corporation_report.txt';a.click();
