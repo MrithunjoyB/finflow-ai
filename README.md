@@ -27,6 +27,7 @@ The system keeps the 9-agent AI corporation concept while adding runtime routing
 - Agent trace logging
 - Evaluator agent for output completeness
 - Synthesis/final report agent
+- Premium React/Vite command-center frontend
 - Fake sample files for safe demos
 - Pytest coverage for routing, API behavior, tracing, and evaluator checks
 
@@ -99,6 +100,8 @@ GROQ_API_KEY=your_real_groq_api_key
 
 ## Setup Instructions
 
+Backend:
+
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
@@ -113,7 +116,34 @@ Open the health endpoint:
 http://127.0.0.1:5050/api/health
 ```
 
-Then open `index.html` manually in your browser.
+Frontend:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Open the React frontend:
+
+```text
+http://localhost:5173
+```
+
+The backend must be running on port `5050` because the frontend API layer points to `http://127.0.0.1:5050`.
+
+The previous vanilla HTML experience is preserved at `legacy/index.html`.
+
+## Frontend Stack
+
+- Vite
+- React
+- TypeScript
+- Tailwind CSS
+- Framer Motion
+- Lucide React
+
+The frontend is located in `frontend/` and is designed as an AI finance mission-control surface. It keeps the same backend API contract while improving the visual hierarchy, upload experience, routing display, final report readability, evaluator view, and trace timeline.
 
 ## API Endpoints
 
@@ -197,6 +227,13 @@ python3 -m pytest
 ```
 
 Tests cover task routing, demo-mode API behavior, trace logging, evaluator output, and backward-compatible endpoints.
+
+Frontend build check:
+
+```bash
+cd frontend
+npm run build
+```
 
 ## Security Notes
 

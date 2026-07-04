@@ -11,12 +11,13 @@ FinFlow AI Corporation is a task-routed multi-agent finance operations prototype
 ## Live Demo Steps
 
 1. Start the Flask backend with `python3 server.py`.
-2. Open `index.html`.
-3. Upload `samples/sample_invoice.txt`.
-4. Show the detected route: `invoice_analysis`.
-5. Show the final executive report.
-6. Show the trace timeline with agent status and duration.
-7. Open department tabs to show the 9-agent corporation structure.
+2. Start the React frontend with `cd frontend && npm run dev`.
+3. Open `http://localhost:5173`.
+4. Upload `samples/sample_invoice.txt`.
+5. Show the detected route: `invoice_analysis`.
+6. Show the final executive report.
+7. Show the trace timeline with agent status and duration.
+8. Open department tabs to show the 9-agent corporation structure.
 
 ## Architecture Explanation
 

@@ -2,11 +2,11 @@
 
 ## Current Architecture
 
-FinFlow AI Corporation is a Flask-based multi-agent finance operations prototype with a cinematic HTML frontend. The backend accepts financial documents, extracts text, detects the task type, runs a 9-agent AI corporation workflow, traces execution, evaluates output completeness, and synthesizes a final report.
+FinFlow AI Corporation is a Flask-based multi-agent finance operations prototype with a premium React/Vite command-center frontend. The backend accepts financial documents, extracts text, detects the task type, runs a 9-agent AI corporation workflow, traces execution, evaluates output completeness, and synthesizes a final report.
 
 ```mermaid
 flowchart TD
-    A["index.html"] --> B["Flask server.py"]
+    A["React/Vite frontend"] --> B["Flask server.py"]
     B --> C["Safe upload validation"]
     C --> D["PDF/CSV/TXT parser"]
     D --> E["Task router"]
@@ -34,11 +34,13 @@ flowchart TD
 
 ## Frontend Flow
 
-The frontend remains a cinematic single-file `index.html` interface. It uploads a document to `/api/analyze`, displays the original department tabs, and now also displays:
+The primary frontend lives in `frontend/` and uses React, TypeScript, Vite, Tailwind CSS, Framer Motion, and Lucide React. It uploads a document to `/api/analyze`, displays the original department tab outputs, and also displays:
 
 - Detected task routing
 - Final executive report
 - Agent trace timeline
+
+The previous vanilla HTML interface is preserved in `legacy/index.html`.
 
 The UI still depends on backward-compatible top-level agent keys such as `founder`, `ceo`, and `cfo`.
 
