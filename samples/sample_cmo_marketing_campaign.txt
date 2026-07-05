@@ -1,0 +1,22 @@
+Campaign Performance Brief - Demo Data Only
+
+Campaign: Spring Growth Sprint
+Channels: paid social, SEO content, influencer reels, email retargeting
+Audience: early-stage founders, finance operators, and AI workflow builders
+
+Signals:
+- Ad spend: 4200 USD
+- CAC: 18 USD
+- ROAS: 3.4x
+- Revenue attributed: 14280 USD
+- Conversion rate: 4.8%
+- Cost per click: 1.12 USD
+- SEO growth: organic sessions up 31%
+- Social media engagement: short-form video engagement up 22%
+- Influencer attribution: incomplete tracking on two creator campaigns
+- Creative fatigue: static banner CTR declined after week two
+- Mobile landing-page bounce rate: 58%
+
+Notes:
+Lifestyle demo videos and customer testimonial reels produced the highest engagement.
+The team is considering increasing budget next month, but wants CMO, Creative Director, CEO, Founder, and CFO review before scaling spend.

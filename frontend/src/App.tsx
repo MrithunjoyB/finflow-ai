@@ -11,6 +11,7 @@ import AgentTrace from "./components/AgentTrace";
 import AgentTabs from "./components/AgentTabs";
 import ResultActionDock from "./components/ResultActionDock";
 import { analyzeFile, getHealth } from "./lib/api";
+import { defaultReportStyle, type ReportStyleConfig } from "./lib/reportStyles";
 import type { AnalyzeResponse, HealthResponse } from "./types/api";
 
 const agentKeys = ["founder", "cofounder", "ceo", "cfo", "cmo", "cto", "coo", "creative", "hr"] as const;
@@ -24,10 +25,21 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
   const [timelineStatus, setTimelineStatus] = useState<TimelineStatus>("idle");
   const [activeStage, setActiveStage] = useState(0);
+  const [selectedReportStyle, setSelectedReportStyle] = useState<ReportStyleConfig>(defaultReportStyle);
+  const [analysisMode, setAnalysisMode] = useState<"demo" | "live">("demo");
 
   useEffect(() => {
     getHealth().then(setHealth).catch(() => setHealth(undefined));
   }, []);
+
+  useEffect(() => {
+    if (!health) return;
+    if (!health.demo_mode && health.live_available) {
+      setAnalysisMode("live");
+    } else {
+      setAnalysisMode("demo");
+    }
+  }, [health]);
 
   useEffect(() => {
     if (timelineStatus !== "running") return;
@@ -57,7 +69,7 @@ export default function App() {
     setActiveStage(0);
     setTimelineStatus("running");
     try {
-      const result = await analyzeFile(file, true);
+      const result = await analyzeFile(file, true, analysisMode);
       setResponse(result);
       setTimelineStatus("completed");
       setActiveStage(7);
@@ -101,7 +113,7 @@ export default function App() {
     <div className="min-h-screen text-white">
       <BackgroundFX />
       <main className="page-stack">
-        <HeroSection health={health} />
+        <HeroSection health={health} analysisMode={analysisMode} onAnalysisModeChange={setAnalysisMode} selectedReportStyle={selectedReportStyle} onReportStyleChange={setSelectedReportStyle} />
         <UploadMission health={health} file={file} loading={loading} error={error} onFile={handleFile} onLaunch={handleLaunch} />
         {(loading || timelineStatus !== "idle") && <MissionTimeline activeIndex={activeStage} status={timelineStatus} />}
 
@@ -109,7 +121,7 @@ export default function App() {
           <section id="results" className="shell grid gap-6 pb-32 pt-10">
             <WorkflowPanel routing={response.routing} />
             <FinanceSnapshot response={response} fileText={fileText} />
-            <FinalReport report={response.final_report} onCopy={copyFinalReport} onDownload={downloadReport} />
+            <FinalReport report={response.final_report} routing={response.routing} selectedReportStyle={selectedReportStyle} onCopy={copyFinalReport} onDownload={downloadReport} />
             <EvaluatorScore evaluation={response.evaluation} />
             <AgentTrace trace={response.trace} />
             <AgentTabs response={response} />

@@ -10,13 +10,18 @@ from werkzeug.utils import secure_filename
 from config import (
     ALLOWED_EXTENSIONS,
     DEMO_MODE,
-    GROQ_API_KEY,
     MAX_CONTENT_LENGTH,
     PORT,
     UPLOAD_DIR,
 )
 from corporation import run_corporation
 from services.task_router import detect_task_type
+from utils.llm_providers import (
+    SUPPORTED_PROVIDERS,
+    get_active_provider,
+    get_available_providers,
+    is_live_available,
+)
 
 
 app = Flask(__name__)
@@ -56,6 +61,10 @@ def health():
         {
             "status": "AI Corporation Online",
             "demo_mode": DEMO_MODE,
+            "live_available": is_live_available(),
+            "llm_provider": get_active_provider(),
+            "available_providers": get_available_providers(),
+            "supported_providers": SUPPORTED_PROVIDERS,
             "allowed_extensions": sorted(ALLOWED_EXTENSIONS),
         }
     )
@@ -64,16 +73,9 @@ def health():
 @app.route("/api/analyze", methods=["POST"])
 @app.route("/analyze", methods=["POST"])
 def analyze():
-    if not DEMO_MODE and not GROQ_API_KEY:
-        return (
-            jsonify(
-                {
-                    "success": False,
-                    "error": "Missing GROQ_API_KEY. Set DEMO_MODE=true for recruiter demo mode, or add a Groq key when DEMO_MODE=false.",
-                }
-            ),
-            400,
-        )
+    force_demo, mode_used, mode_error = _resolve_analysis_mode(request.form.get("analysis_mode"))
+    if mode_error:
+        return jsonify(mode_error), 400
 
     if "file" not in request.files:
         return jsonify({"success": False, "error": "No file uploaded."}), 400
@@ -109,11 +111,14 @@ def analyze():
             raw_data,
             run_id=run_id,
             full_analysis=full_analysis,
+            force_demo=force_demo,
         )
         return jsonify(
             {
                 "success": True,
                 "run_id": run_id,
+                "mode_used": mode_used,
+                "llm_provider": get_active_provider() if mode_used == "live" else None,
                 "routing": routing,
                 "full_analysis": full_analysis,
                 **results,
@@ -125,6 +130,44 @@ def analyze():
 
 def _as_bool(value):
     return str(value).strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _resolve_analysis_mode(analysis_mode):
+    requested = (analysis_mode or "").strip().lower()
+
+    if requested == "demo":
+        return True, "demo", None
+
+    if requested == "live":
+        if not is_live_available():
+            return (
+                True,
+                "demo",
+                {
+                    "success": False,
+                    "error": "Live LLM Mode is not available. Configure a valid LLM provider API key or switch to Demo Mode.",
+                    "mode_used": "demo",
+                    "llm_provider": None,
+                },
+            )
+        return False, "live", None
+
+    if DEMO_MODE:
+        return True, "demo", None
+
+    if is_live_available():
+        return False, "live", None
+
+    return (
+        True,
+        "demo",
+        {
+            "success": False,
+            "error": "Live LLM Mode is not available. Configure a valid LLM provider API key or switch to Demo Mode.",
+            "mode_used": "demo",
+            "llm_provider": None,
+        },
+    )
 
 
 if __name__ == "__main__":

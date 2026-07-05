@@ -24,7 +24,7 @@ export default function UploadMission({ health, file, loading, error, onFile, on
           <p className="eyebrow">Mission Input</p>
           <h2 className="section-title">Deploy the finance document into the agent network.</h2>
         </div>
-        <p className="section-copy">The backend detects the workflow, routes agents, traces execution, evaluates output, and returns a CFO-style report.</p>
+        <p className="section-copy">The backend detects the workflow, routes agents, traces execution, evaluates output, and returns an executive report.</p>
       </div>
 
       <div className="grid gap-5 lg:grid-cols-[1.15fr_.85fr]">
@@ -64,7 +64,7 @@ export default function UploadMission({ health, file, loading, error, onFile, on
         <InteractiveCard className="p-6" intensity={4}>
           <div className="space-y-4">
             <StatusRow icon={<Server />} label="Backend" value={backendOnline ? "Online" : "Offline"} good={backendOnline} />
-            <StatusRow icon={<CheckCircle2 />} label="Runtime Mode" value={health?.demo_mode ? "Demo Mode ON" : backendOnline ? "Live LLM Mode" : "Unknown"} good={Boolean(health?.demo_mode)} />
+            <StatusRow icon={<CheckCircle2 />} label="Live Providers" value={providerStatus(health)} good={Boolean(health?.available_providers?.length)} />
             <StatusRow icon={<FileText />} label="Allowed Types" value={(health?.allowed_extensions || ["pdf", "csv", "txt"]).map((item) => item.toUpperCase()).join(" / ")} good />
           </div>
           <div className="mt-5 grid gap-2">
@@ -92,4 +92,23 @@ function StatusRow({ icon, label, value, good }: { icon: ReactNode; label: strin
       <span className={good ? "font-black text-greenx" : "font-black text-amberx"}>{value}</span>
     </div>
   );
+}
+
+function providerStatus(health?: HealthResponse) {
+  if (!health) return "Unknown";
+  if (!health.available_providers?.length) return "Demo Only";
+  return health.available_providers.map(providerLabel).join(" / ");
+}
+
+function providerLabel(provider: string) {
+  return (
+    {
+      groq: "Groq",
+      openai: "OpenAI",
+      anthropic: "Claude",
+      gemini: "Gemini",
+      openrouter: "OpenRouter",
+      ollama: "Ollama"
+    } as Record<string, string>
+  )[provider] || provider;
 }

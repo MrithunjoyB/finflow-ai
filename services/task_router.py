@@ -3,6 +3,17 @@ from pathlib import Path
 
 CORE_AGENTS = ["founder", "cofounder", "ceo"]
 DEFAULT_ROUTE_FILE = Path(__file__).resolve().parents[1] / "task_routing.yaml"
+MARKETING_FINANCE_KEYWORDS = [
+    "ad spend",
+    "cac",
+    "roas",
+    "revenue attributed",
+    "revenue attribution",
+    "budget",
+    "cost per click",
+    "cpc",
+    "acquisition cost",
+]
 
 
 TASK_RULES = [
@@ -36,9 +47,9 @@ TASK_RULES = [
     },
     {
         "task_type": "market_summary",
-        "keywords": ["marketing", "ad", "campaign", "seo", "social"],
-        "agents": ["cmo", "ceo"],
-        "reason": "Detected marketing/campaign/SEO keywords",
+        "keywords": ["marketing", "ad", "ads", "campaign", "seo", "social", "conversion", "brand", "content", "audience", "growth"],
+        "agents": ["cmo", "creative", "ceo"],
+        "reason": "Detected marketing/campaign/SEO/growth keywords",
         "confidence": 0.8,
     },
     {
@@ -79,13 +90,18 @@ def detect_task_type(text: str) -> dict:
 
     if best_match:
         route = routes.get(best_match["task_type"], {})
-        selected_agents = _with_core(best_match["agents"])
+        agents = list(best_match["agents"])
+        reason = best_match["reason"]
+        if best_match["task_type"] == "market_summary" and _contains_any(content, MARKETING_FINANCE_KEYWORDS):
+            agents.append("cfo")
+            reason += "; included CFO for marketing spend/CAC/ROAS/revenue attribution signals"
+        selected_agents = _with_core(agents)
         confidence = min(0.95, best_match["confidence"] + ((best_score - 1) * 0.04))
         return {
             "task_type": best_match["task_type"],
             "priority": route.get("priority", "high"),
             "selected_agents": selected_agents,
-            "reason": best_match["reason"],
+            "reason": reason,
             "confidence": round(confidence, 2),
         }
 
@@ -146,3 +162,7 @@ def _with_core(agents):
         if agent not in selected:
             selected.append(agent)
     return selected
+
+
+def _contains_any(content, keywords):
+    return any(keyword in content for keyword in keywords)

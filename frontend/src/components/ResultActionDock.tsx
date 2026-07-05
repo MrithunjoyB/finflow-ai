@@ -7,7 +7,7 @@ type ResultActionDockProps = {
 
 const items = [
   { label: "Workflow", icon: Route, target: "workflow-section" },
-  { label: "CFO Report", icon: FileText, target: "report-section" },
+  { label: "Report", icon: FileText, target: "report-section" },
   { label: "Trace", icon: Activity, target: "trace-section" },
   { label: "Agents", icon: Network, target: "agents-section" }
 ];

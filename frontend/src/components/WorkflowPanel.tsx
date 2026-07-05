@@ -31,6 +31,7 @@ export default function WorkflowPanel({ routing }: { routing?: RoutingResult }) 
           <span className="agent-chip" key={agent}>{agentLabel(agent)}</span>
         ))}
       </div>
+      <p className="mt-4 text-sm leading-6 text-white/68">{routingExplanation(routing)}</p>
       <p className="mt-5 text-sm leading-6 text-white/56">{routing.reason}</p>
     </InteractiveCard>
     </div>
@@ -48,5 +49,24 @@ function Field({ label, value }: { label: string; value: string }) {
 }
 
 function agentLabel(agent: string) {
-  return ({ founder: "Founder", cofounder: "Co-Founder", ceo: "CEO", cfo: "CFO", cmo: "CMO", cto: "CTO", coo: "COO", creative: "Creative", hr: "HR" } as Record<string, string>)[agent] || agent;
+  return ({ founder: "Founder", cofounder: "Co-Founder", ceo: "CEO", cfo: "CFO", cmo: "CMO", cto: "CTO", coo: "COO", creative: "Creative Director", hr: "HR" } as Record<string, string>)[agent] || agent;
+}
+
+function routingExplanation(routing: RoutingResult) {
+  const explanations: Record<string, string> = {
+    revenue_analysis: "These agents were selected because revenue-related documents require strategy review, executive synthesis, and financial interpretation.",
+    invoice_analysis: "These agents were selected because invoice documents require finance validation, operational follow-up, and executive review.",
+    expense_review: "These agents were selected because expense documents require financial analysis, operational review, and risk control.",
+    risk_assessment: "These agents were selected because risk signals require financial validation, operational context, and executive prioritization.",
+    market_summary: "These agents were selected because marketing documents require growth analysis, brand strategy, campaign performance review, creative evaluation, and executive synthesis.",
+    technical_audit: "These agents were selected because technical documents require CTO validation, operational context, and executive review.",
+    operations_review: "These agents were selected because operations documents require process review, execution planning, and executive synthesis.",
+    content_generation: "These agents were selected because content and brand documents require creative direction, marketing context, and executive alignment.",
+    general_finance_review: "These agents were selected to provide a balanced executive, financial, and operational review when no specialized route is detected."
+  };
+  const base = explanations[routing.task_type] || explanations.general_finance_review;
+  if (routing.task_type === "market_summary" && routing.selected_agents.includes("cfo")) {
+    return `${base} CFO AI was included because the document contains marketing spend, CAC, ROAS, and revenue attribution signals.`;
+  }
+  return base;
 }

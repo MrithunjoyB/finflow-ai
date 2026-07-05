@@ -1,6 +1,5 @@
-from groq import Groq
-
-from config import DEMO_MODE, GROQ_API_KEY
+from config import DEMO_MODE
+from utils.llm_providers import call_llm, get_active_provider, get_request_force_demo
 
 
 def _agent_name(system):
@@ -40,28 +39,20 @@ Agent Focus:
 - Source context preview: {preview or "No document text was provided."}
 
 Recommended Next Action:
-- Run with DEMO_MODE=false and a valid GROQ_API_KEY for live LLaMA 3.3 70B analysis.
+- Configure at least one LLM provider API key in .env for Live Mode.
 - Keep demo mode enabled when sharing with recruiters so the project runs immediately without secrets."""
 
 
-def ask_ai(prompt, system="You are an expert AI business agent."):
-    if DEMO_MODE:
+def ask_ai(prompt, system="You are an expert AI business agent.", force_demo=None, provider=None):
+    request_force_demo = get_request_force_demo()
+    if force_demo is None:
+        force_demo = request_force_demo
+
+    use_demo = DEMO_MODE if force_demo is None else bool(force_demo)
+    if use_demo:
         return _demo_response(prompt, system)
 
-    if not GROQ_API_KEY:
-        raise RuntimeError(
-            "Missing GROQ_API_KEY. Set DEMO_MODE=true for recruiter demo mode, or add a Groq key when DEMO_MODE=false."
-        )
-
-    client = Groq(api_key=GROQ_API_KEY)
-    response = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
-        messages=[
-            {"role": "system", "content": system},
-            {"role": "user", "content": prompt},
-        ],
-    )
-    return response.choices[0].message.content
+    return call_llm(prompt, system=system, provider=provider or get_active_provider())
 
 
 def ask_gemini(prompt):

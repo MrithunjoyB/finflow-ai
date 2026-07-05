@@ -30,3 +30,29 @@ def test_detect_task_type_falls_back_to_general_finance_review():
     assert result["task_type"] == "general_finance_review"
     assert result["selected_agents"] == ["founder", "cofounder", "ceo", "cfo", "coo"]
     assert result["confidence"] < 0.7
+
+
+def test_detect_task_type_routes_marketing_to_cmo_and_creative():
+    result = detect_task_type(
+        "Campaign plan for SEO, social media ads, brand content, audience growth, and conversion."
+    )
+
+    assert result["task_type"] == "market_summary"
+    assert "cmo" in result["selected_agents"]
+    assert "creative" in result["selected_agents"]
+    assert "ceo" in result["selected_agents"]
+    assert "cfo" not in result["selected_agents"]
+    assert "cto" not in result["selected_agents"]
+
+
+def test_detect_task_type_routes_marketing_finance_metrics_to_cfo():
+    result = detect_task_type(
+        "Campaign report: ad spend $4200, CAC $18, ROAS 3.4x, revenue attribution, conversion rate, influencer engagement."
+    )
+
+    assert result["task_type"] == "market_summary"
+    assert {"founder", "cofounder", "ceo", "cmo", "creative", "cfo"}.issubset(
+        result["selected_agents"]
+    )
+    assert "cto" not in result["selected_agents"]
+    assert "CFO" in result["reason"]

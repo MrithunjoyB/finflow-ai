@@ -51,11 +51,12 @@ market_summary:
   route_to: cmo
   supporting_agents:
     - ceo
+    - creative
   workers:
     - reporter
   output_format: markdown
   priority: normal
-  description: "Summarize marketing, ads, campaigns, SEO, and social media signals."
+  description: "Summarize marketing, ads, campaigns, SEO, social media, audience, conversion, brand, content, and growth signals."
 
 technical_audit:
   route_to: cto

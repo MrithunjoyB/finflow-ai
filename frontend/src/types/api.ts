@@ -1,6 +1,10 @@
 export type HealthResponse = {
   status: string;
   demo_mode: boolean;
+  live_available: boolean;
+  llm_provider: string;
+  available_providers: string[];
+  supported_providers?: string[];
   allowed_extensions: string[];
 };
 
@@ -36,6 +40,8 @@ export type AnalyzeResponse = {
   error?: string;
   run_id: string;
   full_analysis?: boolean;
+  mode_used?: "demo" | "live" | string;
+  llm_provider?: string | null;
   routing?: RoutingResult;
   agents?: Record<string, string>;
   trace?: AgentTrace[];

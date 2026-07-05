@@ -1,13 +1,75 @@
-import { Activity, ArrowRight, FileText, GitBranch, Menu, Network, Plus, Route, Server, Sparkles } from "lucide-react";
-import { motion } from "framer-motion";
-import type { ReactNode } from "react";
+import { Activity, AlertCircle, ArrowRight, BarChart3, Briefcase, Check, FileText, GitBranch, Menu, Network, Plus, Route, Server, ShieldCheck, Sparkles, X } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
+import type { ReactNode, RefObject } from "react";
 import InteractiveCard from "./InteractiveCard";
 import type { HealthResponse } from "../types/api";
+import { reportStyles, type ReportStyleConfig } from "../lib/reportStyles";
 
-const capabilities = ["Task Routing", "9 AI Agents", "CFO Reports", "Trace Logs", "Demo Mode Ready"];
+const capabilities = ["Task Routing", "9 AI Agents", "Executive Reports", "Trace Logs", "Evaluator Checked"];
 
-export default function HeroSection({ health }: { health?: HealthResponse }) {
+const reportStyleIcons = {
+  "Executive Report": FileText,
+  "CFO Financial Report": BarChart3,
+  "Founder Strategy Report": Sparkles,
+  "CEO Operations Report": Activity,
+  "Risk & Audit Report": ShieldCheck,
+  "Department Summary": Network,
+  "Recruiter Demo Report": Briefcase
+} as const;
+
+type HeroSectionProps = {
+  health?: HealthResponse;
+  analysisMode: "demo" | "live";
+  onAnalysisModeChange: (mode: "demo" | "live") => void;
+  selectedReportStyle: ReportStyleConfig;
+  onReportStyleChange: (style: ReportStyleConfig) => void;
+};
+
+export default function HeroSection({ health, analysisMode, onAnalysisModeChange, selectedReportStyle, onReportStyleChange }: HeroSectionProps) {
   const backendOnline = Boolean(health);
+  const [reportPickerOpen, setReportPickerOpen] = useState(false);
+  const [liveWarningOpen, setLiveWarningOpen] = useState(false);
+  const reportPickerRef = useRef<HTMLDivElement | null>(null);
+  const modeSelectorRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!reportPickerOpen) return;
+    const handlePointerDown = (event: MouseEvent) => {
+      if (!reportPickerRef.current?.contains(event.target as Node)) {
+        setReportPickerOpen(false);
+      }
+    };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setReportPickerOpen(false);
+    };
+    window.addEventListener("mousedown", handlePointerDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("mousedown", handlePointerDown);
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [reportPickerOpen]);
+
+  useEffect(() => {
+    if (!liveWarningOpen) return;
+    const handlePointerDown = (event: MouseEvent) => {
+      if (!modeSelectorRef.current?.contains(event.target as Node)) {
+        setLiveWarningOpen(false);
+      }
+    };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setLiveWarningOpen(false);
+    };
+    const timer = window.setTimeout(() => setLiveWarningOpen(false), 6500);
+    window.addEventListener("mousedown", handlePointerDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener("mousedown", handlePointerDown);
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [liveWarningOpen]);
 
   return (
     <section className="hero-shell">
@@ -41,7 +103,7 @@ export default function HeroSection({ health }: { health?: HealthResponse }) {
                 <span className="hero-accent">financial documents.</span>
               </h1>
               <p className="mt-7 max-w-2xl text-base leading-8 text-white/58">
-                FinFlow AI routes invoices, transactions, and expense reports through traceable AI agents to generate CFO-style reports, risk checks, and action plans.
+                FinFlow AI routes invoices, transactions, and expense reports through a traceable AI corporation to generate executive reports, risk checks, department insights, and action plans.
               </p>
             </div>
 
@@ -81,7 +143,27 @@ export default function HeroSection({ health }: { health?: HealthResponse }) {
         <div className="right-panel">
           <div className="status-strip">
             <StatusPill icon={<Server className="h-3.5 w-3.5" />} label={backendOnline ? "Backend Online" : "Backend Offline"} tone={backendOnline ? "online" : "offline"} />
-            <StatusPill icon={<Sparkles className="h-3.5 w-3.5" />} label={health?.demo_mode ? "Demo Mode ON" : backendOnline ? "Live LLM Mode" : "Mode Unknown"} tone={health?.demo_mode ? "online" : "warning"} />
+            <ModeSelector
+              health={health}
+              mode={analysisMode}
+              warningOpen={liveWarningOpen}
+              selectorRef={modeSelectorRef}
+              onCloseWarning={() => setLiveWarningOpen(false)}
+              onSelect={(mode) => {
+                if (mode === "demo") {
+                  onAnalysisModeChange("demo");
+                  setLiveWarningOpen(false);
+                  return;
+                }
+                if (health?.live_available) {
+                  onAnalysisModeChange("live");
+                  setLiveWarningOpen(false);
+                  return;
+                }
+                onAnalysisModeChange("demo");
+                setLiveWarningOpen(true);
+              }}
+            />
             <StatusPill icon={<Activity className="h-3.5 w-3.5" />} label="API 5050" tone="neutral" />
           </div>
 
@@ -93,7 +175,7 @@ export default function HeroSection({ health }: { health?: HealthResponse }) {
               <div>
                 <h2 className="text-xl font-medium tracking-[-.04em] text-white">AI Finance Mission Active</h2>
                 <p className="mt-2 text-sm leading-6 text-white/55">
-                  Upload a document and watch task routing, agent execution, evaluator checks, and final CFO synthesis.
+                  Upload a document and watch task routing, leadership agents, department agents, evaluator checks, and final executive synthesis.
                 </p>
               </div>
             </div>
@@ -127,18 +209,6 @@ export default function HeroSection({ health }: { health?: HealthResponse }) {
                 </div>
               </div>
 
-              <motion.div
-                className="core-center-badge"
-                animate={{ y: [0, -4, 0], boxShadow: ["0 20px 60px rgba(81,231,255,.16)", "0 28px 82px rgba(81,231,255,.26)", "0 20px 60px rgba(81,231,255,.16)"] }}
-                transition={{ duration: 3.4, repeat: Infinity, ease: "easeInOut" }}
-              >
-                <div>
-                  <b>Finance Command Core</b>
-                  <span>Multi-Agent Routing Active</span>
-                  <small><i /> Evaluator Pass · Quality Gate Online</small>
-                </div>
-              </motion.div>
-
               <div className="globe-caption">
                 <span>Evaluator Quality Layer</span>
                 <strong>Trace verified</strong>
@@ -146,24 +216,83 @@ export default function HeroSection({ health }: { health?: HealthResponse }) {
             </motion.div>
           </div>
 
-          <InteractiveCard className="liquid-glass-strong p-4" enableTilt={false} intensity={2}>
+          <InteractiveCard className="report-picker-shell liquid-glass-strong p-4" enableTilt={false} intensity={2}>
             <div id="workflow-preview" className="grid gap-3">
               <div className="grid gap-3 sm:grid-cols-2">
                 <Feature icon={<Route />} title="Task Routing" body="Detects workflow type and activates selected agents." />
                 <Feature icon={<GitBranch />} title="Agent Trace" body="Logs each agent run with status and duration." />
               </div>
-              <InteractiveCard className="flex items-center gap-4 rounded-[1.5rem] p-4" intensity={3}>
-                <div className="grid h-16 w-14 shrink-0 place-items-center rounded-xl bg-white/[.06] text-white/75">
-                  <FileText className="h-6 w-6" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <h3 className="text-sm font-semibold uppercase tracking-[.14em] text-white">CFO-Style Final Report</h3>
-                  <p className="mt-1 text-sm leading-6 text-white/48">Executive summary, risks, key findings, and recommended actions.</p>
-                </div>
-                <button className="liquid-glass grid h-10 w-10 shrink-0 place-items-center rounded-full text-white/75" aria-label="Report preview">
-                  <Plus className="h-4 w-4" />
-                </button>
-              </InteractiveCard>
+              <div className={`report-style-wrapper ${reportPickerOpen ? "is-open" : ""}`} ref={reportPickerRef}>
+                <InteractiveCard className="report-style-card flex items-center gap-4 rounded-[1.5rem] p-4" intensity={3}>
+                  <div className="grid h-16 w-14 shrink-0 place-items-center rounded-xl bg-white/[.06] text-white/75">
+                    <FileText className="h-6 w-6" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-sm font-semibold uppercase tracking-[.14em] text-white">{selectedReportStyle.cardTitle}</h3>
+                    <p className="mt-1 text-sm leading-6 text-white/48">{selectedReportStyle.description}</p>
+                  </div>
+                  <div className="relative shrink-0">
+                    <motion.button
+                      className="report-style-plus liquid-glass grid h-10 w-10 place-items-center rounded-full text-white/75"
+                      aria-label="Choose report style"
+                      aria-expanded={reportPickerOpen}
+                      onClick={() => setReportPickerOpen((value) => !value)}
+                      animate={{ rotate: reportPickerOpen ? 45 : 0 }}
+                      whileHover={{ scale: 1.08 }}
+                      whileTap={{ scale: 0.96 }}
+                      transition={{ duration: 0.22 }}
+                    >
+                      <Plus className="h-4 w-4" />
+                    </motion.button>
+                  </div>
+                </InteractiveCard>
+                <AnimatePresence>
+                  {reportPickerOpen && (
+                    <motion.button
+                      key="report-style-shield"
+                      className="report-style-shield"
+                      aria-label="Close report style selector"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                      onClick={() => setReportPickerOpen(false)}
+                    />
+                  )}
+                  {reportPickerOpen && (
+                    <motion.div
+                      key="report-style-popover"
+                      className="report-style-popover"
+                      initial={{ opacity: 0, y: 24, scale: 0.96, filter: "blur(10px)" }}
+                      animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
+                      exit={{ opacity: 0, y: 18, scale: 0.97, filter: "blur(8px)" }}
+                      transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+                    >
+                      {reportStyles.map((style) => {
+                        const Icon = reportStyleIcons[style.title as keyof typeof reportStyleIcons] || FileText;
+                        const selected = selectedReportStyle.title === style.title;
+                        return (
+                          <button
+                            key={style.title}
+                            className={`report-style-option ${selected ? "active" : ""}`}
+                            onClick={() => {
+                              onReportStyleChange(style);
+                              setReportPickerOpen(false);
+                            }}
+                          >
+                            <span className="report-style-icon"><Icon className="h-4 w-4" /></span>
+                            <span className="min-w-0 flex-1 text-left">
+                              <b>{style.title}</b>
+                              <small>{style.description}</small>
+                            </span>
+                            {selected && <Check className="h-4 w-4 text-greenx" />}
+                          </button>
+                        );
+                      })}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             </div>
           </InteractiveCard>
         </div>
@@ -180,6 +309,74 @@ function StatusPill({ icon, label, tone }: { icon: ReactNode; label: string; ton
       {label}
     </span>
   );
+}
+
+function ModeSelector({
+  health,
+  mode,
+  warningOpen,
+  selectorRef,
+  onSelect,
+  onCloseWarning
+}: {
+  health?: HealthResponse;
+  mode: "demo" | "live";
+  warningOpen: boolean;
+  selectorRef: RefObject<HTMLDivElement | null>;
+  onSelect: (mode: "demo" | "live") => void;
+  onCloseWarning: () => void;
+}) {
+  const liveAvailable = Boolean(health?.live_available);
+  const provider = providerLabel(health?.llm_provider);
+  const supported = "Groq, OpenAI, Anthropic Claude, Gemini, OpenRouter, or Ollama";
+
+  return (
+    <div className="mode-selector-wrap" ref={selectorRef}>
+      <div className="mode-selector liquid-glass" aria-label="Analysis mode selector">
+        <button className={`mode-segment ${mode === "demo" ? "active" : ""}`} onClick={() => onSelect("demo")} type="button">
+          Demo
+        </button>
+        <button className={`mode-segment ${mode === "live" ? "active" : ""} ${liveAvailable ? "" : "disabled"}`} onClick={() => onSelect("live")} type="button">
+          Live
+        </button>
+      </div>
+      {mode === "live" && liveAvailable && <span className="mode-provider">Live LLM: {provider}</span>}
+      {warningOpen && (
+        <motion.div
+          className="mode-warning liquid-glass-strong"
+          initial={{ opacity: 0, y: -6, scale: 0.96, filter: "blur(8px)" }}
+          animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
+          exit={{ opacity: 0, y: -4, scale: 0.96, filter: "blur(8px)" }}
+        >
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex gap-3">
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amberx" />
+              <div>
+                <b>Live LLM Mode unavailable</b>
+                <p>Live LLM Mode is unavailable. Configure a valid LLM provider API key in .env and restart the backend, or continue in Demo Mode.</p>
+                <small>Supported: {supported}. Demo Mode uses safe sample responses without API cost.</small>
+              </div>
+            </div>
+            <button className="mode-warning-close" type="button" onClick={onCloseWarning} aria-label="Close live mode warning">
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        </motion.div>
+      )}
+    </div>
+  );
+}
+
+function providerLabel(provider?: string) {
+  const labels: Record<string, string> = {
+    groq: "Groq",
+    openai: "OpenAI",
+    anthropic: "Anthropic Claude",
+    gemini: "Gemini",
+    openrouter: "OpenRouter",
+    ollama: "Ollama"
+  };
+  return labels[(provider || "").toLowerCase()] || "Provider";
 }
 
 function Feature({ icon, title, body }: { icon: ReactNode; title: string; body: string }) {

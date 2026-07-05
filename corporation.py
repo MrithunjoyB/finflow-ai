@@ -12,6 +12,7 @@ from agents.synthesis import synthesize_report
 from services.schemas import AgentMessage
 from services.task_router import detect_task_type
 from services.trace_logger import run_agent_with_trace
+from utils.llm_providers import request_force_demo
 
 
 AGENT_ROLES = {
@@ -28,6 +29,22 @@ AGENT_ROLES = {
 
 
 def run_corporation(
+    financial_data,
+    company_context="AI Finance Corporation",
+    run_id=None,
+    full_analysis=True,
+    force_demo=None,
+):
+    with request_force_demo(force_demo):
+        return _run_corporation(
+            financial_data,
+            company_context=company_context,
+            run_id=run_id,
+            full_analysis=full_analysis,
+        )
+
+
+def _run_corporation(
     financial_data,
     company_context="AI Finance Corporation",
     run_id=None,
