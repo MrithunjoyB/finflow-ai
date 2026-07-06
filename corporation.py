@@ -8,7 +8,7 @@ from agents.cto import cto_manage
 from agents.evaluator import evaluate_outputs
 from agents.founder import founder_vision
 from agents.hr import hr_manage
-from agents.synthesis import synthesize_report
+from agents.synthesis import normalize_report_style, synthesize_report
 from services.schemas import AgentMessage
 from services.task_router import detect_task_type
 from services.trace_logger import run_agent_with_trace
@@ -32,8 +32,9 @@ def run_corporation(
     financial_data,
     company_context="AI Finance Corporation",
     run_id=None,
-    full_analysis=True,
+    full_analysis=False,
     force_demo=None,
+    report_style="Executive Report",
 ):
     with request_force_demo(force_demo):
         return _run_corporation(
@@ -41,6 +42,7 @@ def run_corporation(
             company_context=company_context,
             run_id=run_id,
             full_analysis=full_analysis,
+            report_style=report_style,
         )
 
 
@@ -48,13 +50,15 @@ def _run_corporation(
     financial_data,
     company_context="AI Finance Corporation",
     run_id=None,
-    full_analysis=True,
+    full_analysis=False,
+    report_style="Executive Report",
 ):
     agent_outputs = {}
     trace = []
     messages = []
     routing = detect_task_type(financial_data)
-    selected_agents = set(AGENT_ROLES) if full_analysis else set(routing["selected_agents"])
+    selected_agent_keys = _selected_agent_keys(routing, full_analysis)
+    selected_agents = set(selected_agent_keys)
 
     def run(key, fn, *args):
         agent_name, role = AGENT_ROLES[key]
@@ -117,10 +121,6 @@ def _run_corporation(
 
     for key, fn, log_line in department_plan:
         if key not in selected_agents:
-            agent_name, _role = AGENT_ROLES[key]
-            agent_outputs[key] = (
-                f"{agent_name} skipped by task router for {routing['task_type']}."
-            )
             continue
 
         agent_name, role = AGENT_ROLES[key]
@@ -138,17 +138,45 @@ def _run_corporation(
         print(log_line)
         run(key, fn, financial_data)
 
-    evaluation = evaluate_outputs(agent_outputs)
-    final_report = synthesize_report(agent_outputs, trace=trace, evaluation=evaluation)
+    evaluation = evaluate_outputs(agent_outputs, required_agent_keys=selected_agent_keys)
+    selected_report_style = normalize_report_style(report_style)
+    final_report = synthesize_report(
+        agent_outputs,
+        trace=trace,
+        evaluation=evaluation,
+        report_style=selected_report_style,
+        routing=routing,
+    )
 
     return {
         **agent_outputs,
         "run_id": run_id,
         "routing": routing,
+        "report_style": selected_report_style,
         "full_analysis": full_analysis,
+        "selected_agent_keys": selected_agent_keys,
+        "selected_agents": [_display_agent_name(key) for key in selected_agent_keys],
         "agents": agent_outputs,
         "messages": messages,
         "trace": trace,
         "final_report": final_report,
         "evaluation": evaluation,
     }
+
+
+def _selected_agent_keys(routing, full_analysis):
+    if full_analysis:
+        return list(AGENT_ROLES.keys())
+
+    selected = []
+    for key in routing.get("selected_agents", []):
+        if key in AGENT_ROLES and key not in selected:
+            selected.append(key)
+    return selected
+
+
+def _display_agent_name(key):
+    name = AGENT_ROLES[key][0]
+    if name == "HR Manager AI":
+        return "HR"
+    return name.replace(" AI", "")

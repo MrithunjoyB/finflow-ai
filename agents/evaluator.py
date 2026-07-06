@@ -11,9 +11,10 @@ REQUIRED_AGENT_KEYS = {
 }
 
 
-def evaluate_outputs(agent_outputs):
+def evaluate_outputs(agent_outputs, required_agent_keys=None):
     combined = " ".join(str(value) for value in agent_outputs.values()).lower()
-    missing_agents = sorted(REQUIRED_AGENT_KEYS - set(agent_outputs.keys()))
+    expected_agents = set(REQUIRED_AGENT_KEYS if required_agent_keys is None else required_agent_keys)
+    missing_agents = sorted(expected_agents - set(agent_outputs.keys()))
 
     checks = {
         "financial_summary": _contains_any(

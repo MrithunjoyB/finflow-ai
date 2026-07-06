@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Navigate, Route, Routes } from "react-router-dom";
 import BackgroundFX from "./components/BackgroundFX";
 import HeroSection from "./components/HeroSection";
 import UploadMission from "./components/UploadMission";
@@ -12,9 +13,15 @@ import AgentTabs from "./components/AgentTabs";
 import ResultActionDock from "./components/ResultActionDock";
 import { analyzeFile, getHealth } from "./lib/api";
 import { defaultReportStyle, type ReportStyleConfig } from "./lib/reportStyles";
+import BuilderProfilePage from "./pages/BuilderProfilePage";
+import DemoLiveModePage from "./pages/DemoLiveModePage";
+import ProjectOverviewPage from "./pages/ProjectOverviewPage";
+import SystemArchitecturePage from "./pages/SystemArchitecturePage";
+import WhyThisMattersPage from "./pages/WhyThisMattersPage";
 import type { AnalyzeResponse, HealthResponse } from "./types/api";
 
 const agentKeys = ["founder", "cofounder", "ceo", "cfo", "cmo", "cto", "coo", "creative", "hr"] as const;
+type AgentKey = typeof agentKeys[number];
 
 export default function App() {
   const [health, setHealth] = useState<HealthResponse>();
@@ -53,6 +60,7 @@ export default function App() {
     setError(null);
     setTimelineStatus("idle");
     setActiveStage(0);
+    setSelectedReportStyle(defaultReportStyle);
     setFileText("");
     if (/\.(csv|txt)$/i.test(nextFile.name)) {
       const reader = new FileReader();
@@ -69,7 +77,7 @@ export default function App() {
     setActiveStage(0);
     setTimelineStatus("running");
     try {
-      const result = await analyzeFile(file, true, analysisMode);
+      const result = await analyzeFile(file, false, analysisMode, selectedReportStyle.id);
       setResponse(result);
       setTimelineStatus("completed");
       setActiveStage(7);
@@ -106,14 +114,15 @@ export default function App() {
     setError(null);
     setTimelineStatus("idle");
     setActiveStage(0);
+    setSelectedReportStyle(defaultReportStyle);
     window.setTimeout(() => document.getElementById("upload-section")?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
   }
 
-  return (
+  const homePage = (
     <div className="min-h-screen text-white">
       <BackgroundFX />
       <main className="page-stack">
-        <HeroSection health={health} analysisMode={analysisMode} onAnalysisModeChange={setAnalysisMode} selectedReportStyle={selectedReportStyle} onReportStyleChange={setSelectedReportStyle} />
+        <HeroSection health={health} analysisMode={analysisMode} onAnalysisModeChange={setAnalysisMode} selectedReportStyle={selectedReportStyle} onReportStyleChange={setSelectedReportStyle} response={response} />
         <UploadMission health={health} file={file} loading={loading} error={error} onFile={handleFile} onLaunch={handleLaunch} />
         {(loading || timelineStatus !== "idle") && <MissionTimeline activeIndex={activeStage} status={timelineStatus} />}
 
@@ -135,6 +144,18 @@ export default function App() {
       </footer>
     </div>
   );
+
+  return (
+    <Routes>
+      <Route path="/" element={homePage} />
+      <Route path="/project-overview" element={<ProjectOverviewPage />} />
+      <Route path="/builder-profile" element={<BuilderProfilePage />} />
+      <Route path="/system-architecture" element={<SystemArchitecturePage />} />
+      <Route path="/demo-live-mode" element={<DemoLiveModePage health={health} />} />
+      <Route path="/why-this-matters" element={<WhyThisMattersPage />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
 }
 
 function buildDownloadText(response: AnalyzeResponse | null) {
@@ -150,7 +171,20 @@ function buildDownloadText(response: AnalyzeResponse | null) {
     ...(response.trace || []).map((item) => `${item.agent_name} · ${item.status} · ${item.duration_ms}ms`),
     "",
     "AGENT OUTPUTS",
-    ...agentKeys.map((key) => `\n${key.toUpperCase()}\n${response[key] || ""}`)
+    ...getReportAgentKeys(response).map((key) => `\n${key.toUpperCase()}\n${response[key] || response.agents?.[key] || ""}`)
   ];
   return sections.join("\n");
+}
+
+function getReportAgentKeys(response: AnalyzeResponse): AgentKey[] {
+  const allowed = new Set<AgentKey>(agentKeys);
+  if (response.full_analysis) return [...agentKeys];
+  const source = response.selected_agent_keys?.length
+    ? response.selected_agent_keys
+    : response.routing?.selected_agents?.length
+      ? response.routing.selected_agents
+      : response.agents
+        ? Object.keys(response.agents)
+        : [];
+  return source.filter((key): key is AgentKey => allowed.has(key as AgentKey));
 }

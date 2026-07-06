@@ -106,12 +106,14 @@ def analyze():
     try:
         raw_data = extract_text(path)
         routing = detect_task_type(raw_data)
-        full_analysis = _as_bool(request.form.get("full_analysis", "true"))
+        full_analysis = _as_bool(request.form.get("full_analysis", "false"))
+        report_style = request.form.get("report_style", "Executive Report")
         results = run_corporation(
             raw_data,
             run_id=run_id,
             full_analysis=full_analysis,
             force_demo=force_demo,
+            report_style=report_style,
         )
         return jsonify(
             {
@@ -119,6 +121,7 @@ def analyze():
                 "run_id": run_id,
                 "mode_used": mode_used,
                 "llm_provider": get_active_provider() if mode_used == "live" else None,
+                "report_style": results.get("report_style", report_style),
                 "routing": routing,
                 "full_analysis": full_analysis,
                 **results,
@@ -145,7 +148,7 @@ def _resolve_analysis_mode(analysis_mode):
                 "demo",
                 {
                     "success": False,
-                    "error": "Live LLM Mode is not available. Configure a valid LLM provider API key or switch to Demo Mode.",
+                    "error": "Live LLM Mode is unavailable. Configure a valid provider API key or switch to Demo Mode.",
                     "mode_used": "demo",
                     "llm_provider": None,
                 },
@@ -163,7 +166,7 @@ def _resolve_analysis_mode(analysis_mode):
         "demo",
         {
             "success": False,
-            "error": "Live LLM Mode is not available. Configure a valid LLM provider API key or switch to Demo Mode.",
+            "error": "Live LLM Mode is unavailable. Configure a valid provider API key or switch to Demo Mode.",
             "mode_used": "demo",
             "llm_provider": None,
         },

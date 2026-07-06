@@ -1,15 +1,18 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { CircleCheck, Maximize2 } from "lucide-react";
 import AnalysisModal from "./AnalysisModal";
 import InteractiveCard from "./InteractiveCard";
 import Reveal from "./Reveal";
 import type { AnalyzeResponse } from "../types/api";
 
+type AgentKey = "founder" | "cofounder" | "ceo" | "cfo" | "cmo" | "cto" | "coo" | "creative" | "hr";
+type AgentTab = readonly [AgentKey, string, string];
+
 const leadership = [
   ["founder", "Founder", "Strategic Vision"],
   ["cofounder", "Co-Founder", "Coordination Report"],
   ["ceo", "CEO", "Operational Intelligence"]
-] as const;
+] as const satisfies readonly AgentTab[];
 
 const departments = [
   ["cfo", "CFO", "Finance Department"],
@@ -18,16 +21,36 @@ const departments = [
   ["coo", "COO", "Operations Department"],
   ["creative", "Creative", "Brand & Design"],
   ["hr", "HR", "People & Culture"]
-] as const;
+] as const satisfies readonly AgentTab[];
 
 export default function AgentTabs({ response }: { response?: AnalyzeResponse | null }) {
   const [leadTab, setLeadTab] = useState(0);
   const [deptTab, setDeptTab] = useState(0);
+  const visibleKeys = useMemo(() => getVisibleAgentKeys(response), [response]);
+  const visibleSet = useMemo(() => new Set(visibleKeys), [visibleKeys]);
+  const visibleLeadership = useMemo(() => leadership.filter(([key]) => visibleSet.has(key)), [visibleSet]);
+  const visibleDepartments = useMemo(() => departments.filter(([key]) => visibleSet.has(key)), [visibleSet]);
+  const analysisLabel = response?.full_analysis ? "Full Corporation Analysis." : "Selected routed agents.";
+
+  useEffect(() => {
+    if (leadTab >= visibleLeadership.length) setLeadTab(0);
+  }, [leadTab, visibleLeadership.length]);
+
+  useEffect(() => {
+    if (deptTab >= visibleDepartments.length) setDeptTab(0);
+  }, [deptTab, visibleDepartments.length]);
+
+  if (!visibleLeadership.length && !visibleDepartments.length) return null;
+
   return (
     <Reveal>
       <div id="agents-section" className="grid scroll-mt-8 gap-8">
-        <TabBlock title="Leadership Intelligence" subtitle="Strategic layer." tabs={leadership} active={leadTab} onChange={setLeadTab} response={response} />
-        <TabBlock title="Department Reports" subtitle="Operational departments." tabs={departments} active={deptTab} onChange={setDeptTab} response={response} />
+        {visibleLeadership.length > 0 && (
+          <TabBlock title="Leadership Intelligence" subtitle={`Strategic layer · ${analysisLabel}`} tabs={visibleLeadership} active={leadTab} onChange={setLeadTab} response={response} />
+        )}
+        {visibleDepartments.length > 0 && (
+          <TabBlock title="Department Reports" subtitle={`Operational departments · ${analysisLabel}`} tabs={visibleDepartments} active={deptTab} onChange={setDeptTab} response={response} />
+        )}
       </div>
     </Reveal>
   );
@@ -43,14 +66,15 @@ function TabBlock({
 }: {
   title: string;
   subtitle: string;
-  tabs: readonly (readonly [keyof AnalyzeResponse, string, string])[];
+  tabs: readonly AgentTab[];
   active: number;
   onChange: (index: number) => void;
   response?: AnalyzeResponse | null;
 }) {
   const [modalOpen, setModalOpen] = useState(false);
-  const current = tabs[active];
-  const value = String(response?.[current[0]] || "Run an analysis to populate this agent output.");
+  const current = tabs[Math.min(active, tabs.length - 1)];
+  if (!current) return null;
+  const value = String(response?.agents?.[current[0]] || response?.[current[0]] || "Run an analysis to populate this agent output.");
   const preview = summarize(value);
 
   return (
@@ -102,4 +126,30 @@ function summarize(value: string) {
   const first = value.replace(/\s+/g, " ").trim();
   if (first.length <= 260) return first;
   return `${first.slice(0, 260).replace(/\s+\S*$/, "")}...`;
+}
+
+export function getVisibleAgentKeys(response?: AnalyzeResponse | null): AgentKey[] {
+  const allowed = new Set<AgentKey>([
+    "founder",
+    "cofounder",
+    "ceo",
+    "cfo",
+    "cmo",
+    "cto",
+    "coo",
+    "creative",
+    "hr"
+  ]);
+
+  const source = response?.full_analysis
+    ? Array.from(allowed)
+    : response?.selected_agent_keys?.length
+      ? response.selected_agent_keys
+      : response?.routing?.selected_agents?.length
+        ? response.routing.selected_agents
+        : response?.agents
+          ? Object.keys(response.agents)
+          : [];
+
+  return source.filter((key): key is AgentKey => allowed.has(key as AgentKey));
 }

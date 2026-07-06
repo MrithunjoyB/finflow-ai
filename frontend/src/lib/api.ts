@@ -10,11 +10,12 @@ export async function getHealth(): Promise<HealthResponse> {
   return response.json();
 }
 
-export async function analyzeFile(file: File, fullAnalysis = true, analysisMode: "demo" | "live" = "demo"): Promise<AnalyzeResponse> {
+export async function analyzeFile(file: File, fullAnalysis = false, analysisMode: "demo" | "live" = "demo", reportStyle = "Executive Report"): Promise<AnalyzeResponse> {
   const formData = new FormData();
   formData.append("file", file);
   formData.append("full_analysis", String(fullAnalysis));
   formData.append("analysis_mode", analysisMode);
+  formData.append("report_style", reportStyle);
 
   const response = await fetch(`${API_BASE}/api/analyze`, {
     method: "POST",

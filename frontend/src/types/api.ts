@@ -42,7 +42,10 @@ export type AnalyzeResponse = {
   full_analysis?: boolean;
   mode_used?: "demo" | "live" | string;
   llm_provider?: string | null;
+  report_style?: string;
   routing?: RoutingResult;
+  selected_agents?: string[];
+  selected_agent_keys?: string[];
   agents?: Record<string, string>;
   trace?: AgentTrace[];
   evaluation?: EvaluationResult;

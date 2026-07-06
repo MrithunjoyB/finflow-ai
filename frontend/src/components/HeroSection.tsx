@@ -1,21 +1,25 @@
-import { Activity, AlertCircle, ArrowRight, BarChart3, Briefcase, Check, FileText, GitBranch, Menu, Network, Plus, Route, Server, ShieldCheck, Sparkles, X } from "lucide-react";
+import { Activity, AlertCircle, ArrowRight, BarChart3, Check, Cpu, FileText, GitBranch, Megaphone, Menu, Network, Palette, Plus, Route, Server, Sparkles, UserCheck, Users, Workflow, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import type { ReactNode, RefObject } from "react";
 import InteractiveCard from "./InteractiveCard";
-import type { HealthResponse } from "../types/api";
-import { reportStyles, type ReportStyleConfig } from "../lib/reportStyles";
+import MissionControlMenu from "./MissionControlMenu";
+import type { AnalyzeResponse, HealthResponse } from "../types/api";
+import { defaultReportStyle, getReportOptionsForAgents, reportStyleGroups, type ReportStyleConfig } from "../lib/reportStyles";
 
 const capabilities = ["Task Routing", "9 AI Agents", "Executive Reports", "Trace Logs", "Evaluator Checked"];
 
 const reportStyleIcons = {
-  "Executive Report": FileText,
-  "CFO Financial Report": BarChart3,
-  "Founder Strategy Report": Sparkles,
-  "CEO Operations Report": Activity,
-  "Risk & Audit Report": ShieldCheck,
-  "Department Summary": Network,
-  "Recruiter Demo Report": Briefcase
+  overall_executive: FileText,
+  agent_founder: Sparkles,
+  agent_cofounder: Users,
+  agent_ceo: Activity,
+  agent_cfo: BarChart3,
+  agent_cmo: Megaphone,
+  agent_cto: Cpu,
+  agent_coo: Workflow,
+  agent_creative: Palette,
+  agent_hr: UserCheck
 } as const;
 
 type HeroSectionProps = {
@@ -24,14 +28,25 @@ type HeroSectionProps = {
   onAnalysisModeChange: (mode: "demo" | "live") => void;
   selectedReportStyle: ReportStyleConfig;
   onReportStyleChange: (style: ReportStyleConfig) => void;
+  response?: AnalyzeResponse | null;
 };
 
-export default function HeroSection({ health, analysisMode, onAnalysisModeChange, selectedReportStyle, onReportStyleChange }: HeroSectionProps) {
+export default function HeroSection({ health, analysisMode, onAnalysisModeChange, selectedReportStyle, onReportStyleChange, response }: HeroSectionProps) {
   const backendOnline = Boolean(health);
   const [reportPickerOpen, setReportPickerOpen] = useState(false);
   const [liveWarningOpen, setLiveWarningOpen] = useState(false);
+  const [missionControlOpen, setMissionControlOpen] = useState(false);
   const reportPickerRef = useRef<HTMLDivElement | null>(null);
   const modeSelectorRef = useRef<HTMLDivElement | null>(null);
+  const selectedAgentKeys = getSelectedAgentKeys(response);
+  const reportOptions = getReportOptionsForAgents(selectedAgentKeys);
+  const hasAnalysis = Boolean(response);
+
+  useEffect(() => {
+    if (!reportOptions.some((style) => style.id === selectedReportStyle.id)) {
+      onReportStyleChange(defaultReportStyle);
+    }
+  }, [onReportStyleChange, reportOptions, selectedReportStyle.id]);
 
   useEffect(() => {
     if (!reportPickerOpen) return;
@@ -82,7 +97,13 @@ export default function HeroSection({ health, analysisMode, onAnalysisModeChange
         >
           <nav className="flex items-center justify-between gap-4">
             <div className="hero-mark">finflow</div>
-            <button className="hero-menu" aria-label="Open navigation">
+            <button
+              className="hero-menu"
+              type="button"
+              aria-label="Open FinFlow Mission Control"
+              aria-expanded={missionControlOpen}
+              onClick={() => setMissionControlOpen(true)}
+            >
               <Menu className="h-5 w-5" />
             </button>
           </nav>
@@ -236,6 +257,7 @@ export default function HeroSection({ health, analysisMode, onAnalysisModeChange
                       className="report-style-plus liquid-glass grid h-10 w-10 place-items-center rounded-full text-white/75"
                       aria-label="Choose report style"
                       aria-expanded={reportPickerOpen}
+                      aria-haspopup="listbox"
                       onClick={() => setReportPickerOpen((value) => !value)}
                       animate={{ rotate: reportPickerOpen ? 45 : 0 }}
                       whileHover={{ scale: 1.08 }}
@@ -263,30 +285,51 @@ export default function HeroSection({ health, analysisMode, onAnalysisModeChange
                     <motion.div
                       key="report-style-popover"
                       className="report-style-popover"
+                      role="listbox"
+                      aria-label="Choose report or agent summary style"
                       initial={{ opacity: 0, y: 24, scale: 0.96, filter: "blur(10px)" }}
                       animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
                       exit={{ opacity: 0, y: 18, scale: 0.97, filter: "blur(8px)" }}
                       transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
                     >
-                      {reportStyles.map((style) => {
-                        const Icon = reportStyleIcons[style.title as keyof typeof reportStyleIcons] || FileText;
-                        const selected = selectedReportStyle.title === style.title;
+                      {reportStyleGroups.map((group) => {
+                        const options = reportOptions.filter((style) => style.group === group);
+                        if (!options.length && group === "ROUTED AGENT SUMMARIES" && !hasAnalysis) {
+                          return (
+                            <div className="report-style-group" key={group}>
+                              <div className="report-style-group-label">{group}</div>
+                              <div className="report-style-empty">Upload a document to activate routed agent summaries.</div>
+                            </div>
+                          );
+                        }
+                        if (!options.length) return null;
                         return (
-                          <button
-                            key={style.title}
-                            className={`report-style-option ${selected ? "active" : ""}`}
-                            onClick={() => {
-                              onReportStyleChange(style);
-                              setReportPickerOpen(false);
-                            }}
-                          >
-                            <span className="report-style-icon"><Icon className="h-4 w-4" /></span>
-                            <span className="min-w-0 flex-1 text-left">
-                              <b>{style.title}</b>
-                              <small>{style.description}</small>
-                            </span>
-                            {selected && <Check className="h-4 w-4 text-greenx" />}
-                          </button>
+                          <div className="report-style-group" key={group}>
+                            <div className="report-style-group-label">{group}</div>
+                            {options.map((style) => {
+                              const Icon = reportStyleIcons[style.id as keyof typeof reportStyleIcons] || FileText;
+                              const selected = selectedReportStyle.id === style.id;
+                              return (
+                                <button
+                                  key={style.id}
+                                  className={`report-style-option ${selected ? "active" : ""}`}
+                                  role="option"
+                                  aria-selected={selected}
+                                  onClick={() => {
+                                    onReportStyleChange(style);
+                                    setReportPickerOpen(false);
+                                  }}
+                                >
+                                  <span className="report-style-icon"><Icon className="h-4 w-4" /></span>
+                                  <span className="min-w-0 flex-1 text-left">
+                                    <b>{style.label}</b>
+                                    <small>{style.description}</small>
+                                  </span>
+                                  {selected && <Check className="h-4 w-4 text-greenx" />}
+                                </button>
+                              );
+                            })}
+                          </div>
                         );
                       })}
                     </motion.div>
@@ -297,8 +340,20 @@ export default function HeroSection({ health, analysisMode, onAnalysisModeChange
           </InteractiveCard>
         </div>
       </div>
+      <MissionControlMenu open={missionControlOpen} onClose={() => setMissionControlOpen(false)} />
     </section>
   );
+}
+
+function getSelectedAgentKeys(response?: AnalyzeResponse | null) {
+  if (!response) return [];
+  if (response.full_analysis) {
+    return ["founder", "cofounder", "ceo", "cfo", "cmo", "cto", "coo", "creative", "hr"];
+  }
+  if (response.selected_agent_keys?.length) return response.selected_agent_keys;
+  if (response.routing?.selected_agents?.length) return response.routing.selected_agents;
+  if (response.agents) return Object.keys(response.agents);
+  return [];
 }
 
 function StatusPill({ icon, label, tone }: { icon: ReactNode; label: string; tone: "online" | "offline" | "warning" | "neutral" }) {

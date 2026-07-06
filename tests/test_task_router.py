@@ -43,6 +43,8 @@ def test_detect_task_type_routes_marketing_to_cmo_and_creative():
     assert "ceo" in result["selected_agents"]
     assert "cfo" not in result["selected_agents"]
     assert "cto" not in result["selected_agents"]
+    assert "coo" not in result["selected_agents"]
+    assert "hr" not in result["selected_agents"]
 
 
 def test_detect_task_type_routes_marketing_finance_metrics_to_cfo():
@@ -55,4 +57,6 @@ def test_detect_task_type_routes_marketing_finance_metrics_to_cfo():
         result["selected_agents"]
     )
     assert "cto" not in result["selected_agents"]
+    assert "coo" not in result["selected_agents"]
+    assert "hr" not in result["selected_agents"]
     assert "CFO" in result["reason"]

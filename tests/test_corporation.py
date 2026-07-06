@@ -20,7 +20,7 @@ def test_run_corporation_returns_trace_and_synthesis(monkeypatch):
     monkeypatch.setattr(corporation, "creative_direct", fake_agent("creative"))
     monkeypatch.setattr(corporation, "hr_manage", fake_agent("hr"))
 
-    result = corporation.run_corporation("revenue,expenses,risk")
+    result = corporation.run_corporation("revenue,expenses,risk", full_analysis=True)
 
     assert result["founder"].startswith("founder financial summary risk action")
     assert result["agents"]["cfo"].startswith("cfo financial summary risk action")
@@ -31,6 +31,48 @@ def test_run_corporation_returns_trace_and_synthesis(monkeypatch):
     assert "Executive Report" in result["final_report"]
     assert result["evaluation"]["score"] == 100
     assert result["evaluation"]["passed"] is True
+
+
+def test_run_corporation_routed_market_summary_only_returns_selected_agents(monkeypatch):
+    def fake_agent(label):
+        return lambda *args, **kwargs: (
+            f"{label} financial summary risk action workflow operations "
+            "recommend validate not financial advice"
+        )
+
+    monkeypatch.setattr(corporation, "founder_vision", fake_agent("founder"))
+    monkeypatch.setattr(corporation, "cofounder_coordinate", fake_agent("cofounder"))
+    monkeypatch.setattr(corporation, "ceo_operate", fake_agent("ceo"))
+    monkeypatch.setattr(corporation, "cfo_analyze", fake_agent("cfo"))
+    monkeypatch.setattr(corporation, "cmo_strategize", fake_agent("cmo"))
+    monkeypatch.setattr(corporation, "cto_manage", fake_agent("cto"))
+    monkeypatch.setattr(corporation, "coo_operate", fake_agent("coo"))
+    monkeypatch.setattr(corporation, "creative_direct", fake_agent("creative"))
+    monkeypatch.setattr(corporation, "hr_manage", fake_agent("hr"))
+
+    result = corporation.run_corporation(
+        "Campaign report with ad spend, CAC, ROAS, SEO, social, brand content, and revenue attribution.",
+        full_analysis=False,
+    )
+
+    assert result["routing"]["task_type"] == "market_summary"
+    assert result["selected_agent_keys"] == [
+        "founder",
+        "cofounder",
+        "ceo",
+        "cmo",
+        "creative",
+        "cfo",
+    ]
+    assert set(result["agents"]) == set(result["selected_agent_keys"])
+    assert "CTO" not in result["selected_agents"]
+    assert "COO" not in result["selected_agents"]
+    assert "HR" not in result["selected_agents"]
+    assert "cto" not in result
+    assert "coo" not in result["agents"]
+    assert "hr" not in result["agents"]
+    assert len(result["trace"]) == len(result["selected_agent_keys"])
+    assert result["evaluation"]["checks"]["agent_completeness"] is True
 
 
 def test_run_agent_trace_records_completed_trace():

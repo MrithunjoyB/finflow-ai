@@ -33,15 +33,19 @@ def test_rejects_unsupported_file_type():
 def test_analyze_returns_run_id(monkeypatch):
     client = server.app.test_client()
 
-    def fake_run_corporation(raw_data, run_id=None, full_analysis=True, force_demo=None):
+    def fake_run_corporation(raw_data, run_id=None, full_analysis=False, force_demo=None, report_style="Executive Report"):
         assert "Revenue" in raw_data
         assert run_id
-        assert full_analysis is True
+        assert full_analysis is False
         assert force_demo is True
+        assert report_style == "Founder Strategy Report"
         return {
             "run_id": run_id,
             "routing": {"task_type": "revenue_analysis"},
+            "report_style": report_style,
             "full_analysis": full_analysis,
+            "selected_agent_keys": ["founder", "cofounder", "ceo", "cfo"],
+            "selected_agents": ["Founder", "Co-Founder", "CEO", "CFO"],
             "founder": "demo founder report",
             "cfo": "demo cfo report",
             "agents": {"founder": "demo founder report", "cfo": "demo cfo report"},
@@ -60,6 +64,7 @@ def test_analyze_returns_run_id(monkeypatch):
                 "sample.csv",
             ),
             "analysis_mode": "demo",
+            "report_style": "Founder Strategy Report",
         },
         content_type="multipart/form-data",
     )
@@ -70,6 +75,7 @@ def test_analyze_returns_run_id(monkeypatch):
     assert data["run_id"]
     assert data["routing"]["task_type"] == "revenue_analysis"
     assert data["mode_used"] == "demo"
+    assert data["report_style"] == "Founder Strategy Report"
     assert data["founder"] == "demo founder report"
     assert data["final_report"] == "demo final report"
 
@@ -125,7 +131,7 @@ def test_live_mode_without_provider_returns_clear_error(monkeypatch):
     assert response.status_code == 400
     assert data["success"] is False
     assert data["mode_used"] == "demo"
-    assert "LLM provider" in data["error"]
+    assert data["error"] == "Live LLM Mode is unavailable. Configure a valid provider API key or switch to Demo Mode."
 
 
 def test_health_with_placeholder_key_reports_live_unavailable(monkeypatch):
@@ -160,4 +166,21 @@ def test_analyze_live_with_placeholder_key_returns_clean_error(monkeypatch):
     assert response.status_code == 400
     assert data["success"] is False
     assert data["mode_used"] == "demo"
-    assert data["error"] == "Live LLM Mode is not available. Configure a valid LLM provider API key or switch to Demo Mode."
+    assert data["error"] == "Live LLM Mode is unavailable. Configure a valid provider API key or switch to Demo Mode."
+
+
+def test_health_demo_default_can_still_report_live_available(monkeypatch):
+    client = server.app.test_client()
+    monkeypatch.setattr(server, "DEMO_MODE", True)
+    monkeypatch.setattr(server, "is_live_available", lambda: True)
+    monkeypatch.setattr(server, "get_available_providers", lambda: ["groq"])
+    monkeypatch.setattr(server, "get_active_provider", lambda: "groq")
+
+    response = client.get("/api/health")
+
+    data = response.get_json()
+    assert response.status_code == 200
+    assert data["demo_mode"] is True
+    assert data["live_available"] is True
+    assert data["available_providers"] == ["groq"]
+    assert data["llm_provider"] == "groq"

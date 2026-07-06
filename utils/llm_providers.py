@@ -75,6 +75,9 @@ def get_active_provider():
     available = get_available_providers()
     if configured in available:
         return configured
+    for provider in available:
+        if provider != "ollama":
+            return provider
     return None
 
 
@@ -98,7 +101,7 @@ def get_request_force_demo():
 def call_llm(prompt: str, system: str = "You are an expert AI business agent.", provider: Optional[str] = None):
     active_provider = provider or get_active_provider()
     if not active_provider:
-        raise RuntimeError("Live LLM Mode is not available. Configure a valid LLM provider API key or switch to Demo Mode.")
+        raise RuntimeError("Live LLM Mode is unavailable. Configure a valid provider API key or switch to Demo Mode.")
 
     active = active_provider.strip().lower()
     if active not in SUPPORTED_PROVIDERS:
