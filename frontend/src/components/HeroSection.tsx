@@ -7,6 +7,8 @@ import MissionControlMenu from "./MissionControlMenu";
 import type { AnalyzeResponse, HealthResponse } from "../types/api";
 import { defaultReportStyle, getReportOptionsForAgents, reportStyleGroups, type ReportStyleConfig } from "../lib/reportStyles";
 
+const HOME_BACKGROUND_VIDEO_SRC = "/videos/home-market-bg.mp4";
+const HERO_GLOBE_VIDEO_SRC = "/videos/home-globe.mp4";
 const capabilities = ["Task Routing", "9 AI Agents", "Executive Reports", "Trace Logs", "Evaluator Checked"];
 
 const reportStyleIcons = {
@@ -88,6 +90,7 @@ export default function HeroSection({ health, analysisMode, onAnalysisModeChange
 
   return (
     <section className="hero-shell">
+      <HeroBackgroundVideo />
       <div className="hero-grid">
         <motion.div
           className="hero-panel"
@@ -195,7 +198,7 @@ export default function HeroSection({ health, analysisMode, onAnalysisModeChange
               </div>
               <div>
                 <h2 className="text-xl font-medium tracking-[-.04em] text-white">AI Finance Mission Active</h2>
-                <p className="mt-2 text-sm leading-6 text-white/55">
+                <p className="mt-2 text-sm leading-6 text-white/68">
                   Upload a document and watch task routing, leadership agents, department agents, evaluator checks, and final executive synthesis.
                 </p>
               </div>
@@ -203,38 +206,7 @@ export default function HeroSection({ health, analysisMode, onAnalysisModeChange
           </InteractiveCard>
 
           <div className="relative flex flex-1 items-center justify-center overflow-hidden rounded-[2.5rem]">
-            <div className="absolute inset-8 rounded-full bg-[radial-gradient(circle,rgba(81,231,255,.11),transparent_58%)] blur-2xl" />
-            <motion.div
-              className="command-core"
-              animate={{ scale: [1, 1.018, 1], opacity: [0.9, 1, 0.9] }}
-              transition={{ duration: 5.2, repeat: Infinity, ease: "easeInOut" }}
-            >
-              {Array.from({ length: 12 }).map((_, index) => (
-                <span key={index} className="core-ray" style={{ transform: `rotate(${index * 32.7}deg)` }} />
-              ))}
-
-              <div className="globe-stage" aria-hidden="true">
-                <div className="globe-shadow" />
-                <div className="finance-globe">
-                  <span className="globe-highlight" />
-                  <span className="globe-equator" />
-                  <span className="globe-lat lat-1" />
-                  <span className="globe-lat lat-2" />
-                  <span className="globe-lat lat-3" />
-                  <span className="globe-lat lat-4" />
-                  {Array.from({ length: 8 }).map((_, index) => (
-                    <span key={index} className="globe-lon" style={{ transform: `rotateY(${index * 22.5}deg)` }} />
-                  ))}
-                  <span className="globe-scan scan-a" />
-                  <span className="globe-scan scan-b" />
-                </div>
-              </div>
-
-              <div className="globe-caption">
-                <span>Evaluator Quality Layer</span>
-                <strong>Trace verified</strong>
-              </div>
-            </motion.div>
+            <HeroGlobeVideo />
           </div>
 
           <InteractiveCard className="report-picker-shell liquid-glass-strong p-4" enableTilt={false} intensity={2}>
@@ -250,7 +222,7 @@ export default function HeroSection({ health, analysisMode, onAnalysisModeChange
                   </div>
                   <div className="min-w-0 flex-1">
                     <h3 className="text-sm font-semibold uppercase tracking-[.14em] text-white">{selectedReportStyle.cardTitle}</h3>
-                    <p className="mt-1 text-sm leading-6 text-white/48">{selectedReportStyle.description}</p>
+                    <p className="mt-1 text-sm leading-6 text-white/64">{selectedReportStyle.description}</p>
                   </div>
                   <div className="relative shrink-0">
                     <motion.button
@@ -342,6 +314,91 @@ export default function HeroSection({ health, analysisMode, onAnalysisModeChange
       </div>
       <MissionControlMenu open={missionControlOpen} onClose={() => setMissionControlOpen(false)} />
     </section>
+  );
+}
+
+function LocalLoopVideo({ src, className, onPlaybackError }: { src: string; className: string; onPlaybackError: () => void }) {
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    let cancelled = false;
+
+    const startPlayback = () => {
+      const playPromise = video.play();
+      if (playPromise) {
+        playPromise.catch(() => {
+          if (!cancelled) onPlaybackError();
+        });
+      }
+    };
+
+    video.src = src;
+    startPlayback();
+
+    return () => {
+      cancelled = true;
+      video.removeAttribute("src");
+      video.load();
+    };
+  }, [onPlaybackError, src]);
+
+  return (
+    <video
+      ref={videoRef}
+      className={className}
+      muted
+      autoPlay
+      loop
+      playsInline
+      preload="metadata"
+      onError={onPlaybackError}
+      onEnded={(event) => {
+        event.currentTarget.currentTime = 0;
+        event.currentTarget.play().catch(onPlaybackError);
+      }}
+    />
+  );
+}
+
+function HeroBackgroundVideo() {
+  const [hasVideoError, setHasVideoError] = useState(false);
+
+  return (
+    <div className={`hero-background-layer ${hasVideoError ? "is-fallback" : ""}`} aria-hidden="true">
+      {!hasVideoError && (
+        <LocalLoopVideo
+          src={HOME_BACKGROUND_VIDEO_SRC}
+          className="hero-background-video"
+          onPlaybackError={() => setHasVideoError(true)}
+        />
+      )}
+      <div className="hero-background-overlay" />
+    </div>
+  );
+}
+
+function HeroGlobeVideo() {
+  const [hasVideoError, setHasVideoError] = useState(false);
+
+  return (
+    <motion.div
+      className={`command-core hero-video-core ${hasVideoError ? "is-fallback" : ""}`}
+      animate={{ y: [0, -8, 0], scale: [1, 1.012, 1], opacity: [0.92, 1, 0.92] }}
+      transition={{ duration: 6.4, repeat: Infinity, ease: "easeInOut" }}
+    >
+      {!hasVideoError && (
+        <LocalLoopVideo
+          src={HERO_GLOBE_VIDEO_SRC}
+          className="hero-globe-video"
+          onPlaybackError={() => setHasVideoError(true)}
+        />
+      )}
+      <div className="hero-video-fallback" aria-hidden="true" />
+      <div className="hero-video-vignette" aria-hidden="true" />
+    </motion.div>
   );
 }
 

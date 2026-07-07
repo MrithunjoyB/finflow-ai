@@ -34,7 +34,7 @@ export default function UploadMission({ health, file, loading, error, onFile, on
               <UploadCloud className="h-8 w-8" />
             </span>
             <span className="mt-5 block text-2xl font-medium tracking-[-.04em] text-white">Drop financial file</span>
-            <span className="mt-2 block text-sm leading-6 text-white/52">PDF / CSV / TXT routed through FinFlow's traceable AI corporation.</span>
+            <span className="mt-2 block text-sm leading-6 text-white/72">PDF / CSV / TXT routed through FinFlow's traceable AI corporation.</span>
             <input
               className="sr-only"
               type="file"
@@ -69,9 +69,9 @@ export default function UploadMission({ health, file, loading, error, onFile, on
           </div>
           <div className="mt-5 grid gap-2">
             {["sample_invoice.txt", "sample_transactions.csv", "sample_expenses.csv"].map((sample) => (
-              <InteractiveCard key={sample} className="rounded-[1.1rem] p-3 text-sm text-white/62" intensity={2}>
+              <InteractiveCard key={sample} className="rounded-[1.1rem] bg-black/20 p-3 text-sm text-white/78" intensity={2}>
                 <b className="block font-semibold text-white">{sample}</b>
-                <span className="text-xs text-white/38">Available in /samples. Upload manually for demo.</span>
+                <span className="text-xs text-white/62">Available in /samples. Upload manually for demo.</span>
               </InteractiveCard>
             ))}
           </div>
@@ -85,7 +85,7 @@ export default function UploadMission({ health, file, loading, error, onFile, on
 function StatusRow({ icon, label, value, good }: { icon: ReactNode; label: string; value: string; good: boolean }) {
   return (
     <div className="flex items-center justify-between gap-4 border-b border-white/10 pb-3 last:border-b-0 last:pb-0">
-      <div className="flex items-center gap-3 text-xs font-black uppercase tracking-[.14em] text-slate-500">
+      <div className="flex items-center gap-3 text-xs font-black uppercase tracking-[.14em] text-white/58">
         <span className={good ? "text-greenx [&_svg]:h-4 [&_svg]:w-4" : "text-amberx [&_svg]:h-4 [&_svg]:w-4"}>{icon}</span>
         {label}
       </div>
